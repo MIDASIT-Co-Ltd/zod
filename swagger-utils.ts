@@ -43,8 +43,9 @@ export function writeDocumentation(writePath: string, serverUrl: string) {
 
     const textEncorder = new TextEncoder();
     const Contents = textEncorder.encode(fileContent);
-
-    Deno.writeFileSync(`${writePath}/openapi-docs.yml`, Contents)
+    
+    Deno.mkdir(writePath, { recursive: true });
+    Deno.writeFileSync(`${writePath}/openapi-docs.yml`, Contents);
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
