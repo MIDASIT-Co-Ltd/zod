@@ -39,26 +39,22 @@ function extractRouterSection(text: string, routerName: string, routerUrl: strin
     let endIndex = text.length;
 
     if (startIndex === -1) {
+        const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
+        const matchImport = text.match(routerRegex)
+
         const currentWorkingDirectory = Deno.cwd();
 
-        const relativePath = './src/routes.ts';
+        const relativePath = routerUrl;
         
         const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
         const directoryPath = path.dirname(absolutePath);
 
-        const newAbsolutePath = path.join(directoryPath, './router/chat-router.ts');
+        const newAbsolutePath = path.join(directoryPath, matchImport![2]);
 
-        console.log(newAbsolutePath);
-        return '';
+        text = Deno.readTextFileSync('file://' + newAbsolutePath);
 
-        // const basePath = routerUrl.substring(0, routerUrl.lastIndexOf('/') + 1);
-
-        // const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
-        // const matched = text.match(routerRegex)
-        // text = Deno.readTextFileSync('./src/' + matched![2]);
-        
-        // startIndex = text.search(routerStartRegex);
-        // endIndex = text.length;
+        startIndex = text.search(routerStartRegex);
+        endIndex = text.length;
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
