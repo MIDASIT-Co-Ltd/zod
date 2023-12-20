@@ -49,9 +49,10 @@ function extractRouterSection(text: string, routerName: string, routerUrl: strin
         const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
         const directoryPath = path.dirname(absolutePath);
 
+        if (!matchImport) return '';
         const newAbsolutePath = path.join(directoryPath, matchImport![2]);
 
-        text = Deno.readTextFileSync('file://' + newAbsolutePath);
+        text = Deno.readTextFileSync(newAbsolutePath);
 
         startIndex = text.search(routerStartRegex);
         endIndex = text.length;
