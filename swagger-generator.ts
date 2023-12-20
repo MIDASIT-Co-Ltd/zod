@@ -1,4 +1,5 @@
 import { z, registerEndpoint } from "./swagger-utils.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 export const generateRegister = async(routerUrl: string, schemaUrl: string, deniedMiddlewares: string[]) => {
     const code = await Deno.readTextFile(routerUrl);
@@ -6,7 +7,7 @@ export const generateRegister = async(routerUrl: string, schemaUrl: string, deni
 
 
     for (const [router, mainPath] of routers) {
-        const routerSection = extractRouterSection(code, router);
+        const routerSection = extractRouterSection(code, router, routerUrl);
         const httpMethods = extractHttpMethods(routerSection);
 
         for (const methodToken of httpMethods) {
@@ -30,7 +31,7 @@ function extractRouters(code: string): string[][] {
     return matches.map(match => [match[2], match[1]]);
 }
 
-function extractRouterSection(text: string, routerName: string): string {
+function extractRouterSection(text: string, routerName: string, routerUrl: string): string {
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
@@ -38,12 +39,26 @@ function extractRouterSection(text: string, routerName: string): string {
     let endIndex = text.length;
 
     if (startIndex === -1) {
-        const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
-        const matched = text.match(routerRegex)
-        text = Deno.readTextFileSync('./src/' + matched![2]);
+        const currentWorkingDirectory = Deno.cwd();
+
+        const relativePath = './src/routes.ts';
         
-        startIndex = text.search(routerStartRegex);
-        endIndex = text.length;
+        const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
+        const directoryPath = path.dirname(absolutePath);
+
+        const newAbsolutePath = path.join(directoryPath, './router/chat-router.ts');
+
+        console.log(newAbsolutePath);
+        return '';
+
+        // const basePath = routerUrl.substring(0, routerUrl.lastIndexOf('/') + 1);
+
+        // const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
+        // const matched = text.match(routerRegex)
+        // text = Deno.readTextFileSync('./src/' + matched![2]);
+        
+        // startIndex = text.search(routerStartRegex);
+        // endIndex = text.length;
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
