@@ -34,11 +34,18 @@ function extractRouterSection(text: string, routerName: string): string {
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
-    const startIndex = text.search(routerStartRegex);
+    let startIndex = text.search(routerStartRegex);
     let endIndex = text.length;
 
     if (startIndex === -1) {
-        return 'Router not found';
+        if (startIndex === -1) {
+            const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
+            const matched = text.match(routerRegex)
+            text = Deno.readTextFileSync('./src/' + matched![2]);
+        
+            startIndex = text.search(routerStartRegex);
+            endIndex = text.length;
+        }
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
