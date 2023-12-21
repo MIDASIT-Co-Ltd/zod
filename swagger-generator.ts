@@ -256,7 +256,13 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
 function extractSummary(middlewares: string[], deniedMiddlewares: string[]): string {
     const definedMiddlewares = ["validateBody", "validateParam", "validateResponse", "validatePath", "validateHeader"];
     const combinedMiddlewares = [...deniedMiddlewares, ...definedMiddlewares];
-    return middlewares.find(middleware => !combinedMiddlewares.some(keyword => middleware.includes(keyword))) ?? '';
+    let summary = middlewares.find(middleware => !combinedMiddlewares.some(keyword => middleware.includes(keyword))) ?? '';
+
+    if (summary.includes('executeAndValidateResponse')) {
+        summary = summary.match(/executeAndValidateResponses\(\s*(\w+)/)![1]
+    }
+    
+    return summary;
 }
 
 async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema | undefined> {
