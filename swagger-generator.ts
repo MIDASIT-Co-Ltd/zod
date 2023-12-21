@@ -240,6 +240,13 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
 
         if (middleware.includes('executeAndValidateResponse')) {
             console.log(middleware)
+            const regex = /{status: (\d+), schema: (functionSchemas\.\w+)}/g;
+            let matches;
+            while ((matches = regex.exec(middleware)) !== null) {
+                const [moduleName, schemaName] = matches[2].split('.').slice(-2);
+                const schema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                responses[matches[1]] = { description: matches[2], schema: schema};
+            }
         }
     }
 
