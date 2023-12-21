@@ -1,5 +1,5 @@
 import { Context, Response } from "oak/mod.ts";
-import { z } from "./swagger-utils.ts";
+import { z } from 'zod';
 import { ZodError, ZodRawShape } from "zod";
 
 function handleZodError(error: ZodError, response: Response) {
@@ -16,7 +16,7 @@ export const validateResponse = (status: number, schema: z.ZodSchema) => async (
             data?: any
         }
         const response: responseConfig = ctx.response.body as responseConfig
-
+        console.log(ctx.response.status, ctx.response.body)
         if (ctx.response.status === status) {
             schema.parse(response.data)
         }
