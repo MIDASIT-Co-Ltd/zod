@@ -36,8 +36,6 @@ export const executeAndValidateResponses = (execute: Function, resList: Array<{ 
     } catch (error) {
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
 }
@@ -52,8 +50,6 @@ export const validateResponse = (status: number, schema: z.ZodSchema) => async (
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
 };
@@ -68,8 +64,6 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
 };
@@ -84,8 +78,6 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
 };  
@@ -100,8 +92,6 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
     catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
 }
@@ -118,8 +108,6 @@ export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
 }
