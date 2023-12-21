@@ -8,6 +8,40 @@ function handleZodError(error: ZodError, response: Response) {
     response.body = { error: errors, response: response.body };
 };
 
+
+export const executeAndValidateResponses = (execute: Function, resList: [{status: 200, schema: z.ZodSchema}]) => async(ctx: Context, next: any) => {
+    interface RequestConfig {
+        body?: any,
+        param?: any,
+        header?: any,
+        path?: any,
+        [key: string]: any;
+    }
+
+    const request: RequestConfig = {
+        body: await ctx.request.body().value || undefined,
+        param: ctx.state.param || undefined,
+        header: ctx.state.header || undefined,
+        path: ctx.state.path || undefined
+    };
+    Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
+
+    const response = execute(request);
+
+    try {
+        resList.forEach((res) =>{
+            if(res.status == response.status) res.schema.parse(response.result)
+        })
+        await next();
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            handleZodError(error, ctx.response);
+        } else {    
+            console.error('알 수 없는 오류:', error);
+        }
+    }
+}
+
 export const validateResponse = (status: number, schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
         const response = ctx.response.body
@@ -44,7 +78,7 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
     try {
         const params = Object.fromEntries(ctx.request.url.searchParams);
         ctx.state.request = {params : params}        
-        schema.parse(params);
+        ctx.state.param = schema.parse(params);
 
         await next();
     } catch (error) {        
@@ -56,15 +90,16 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
     }
 };  
 
-export const validatePath = (schema: z.ZodSchema) => async ({ params, response}: { params: object, response: Response}, next: any) => {
+export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
-        schema.parse(params);
+        //@ts-ignore: ctx has params
+        ctx.state.path = schema.parse(ctx.params);
 
         await next();
     }
     catch (error) {        
         if (error instanceof z.ZodError) {
-            handleZodError(error, response);
+            handleZodError(error, ctx.response);
         } else {    
             console.error('알 수 없는 오류:', error);
         }
@@ -77,7 +112,7 @@ export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next
         for (const [key, value] of ctx.request.headers) {
             headersObj[key.toUpperCase()] = value;
         }
-        uppercaseKeys(schema as z.ZodObject<ZodRawShape>).parse(headersObj)
+        ctx.state.header = uppercaseKeys(schema as z.ZodObject<ZodRawShape>).parse(headersObj)
 
         await next();
     } catch (error) {        
