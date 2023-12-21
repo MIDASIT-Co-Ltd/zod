@@ -5,20 +5,14 @@ import { ZodError, ZodRawShape } from "zod";
 function handleZodError(error: ZodError, response: Response) {
     const errors = error.errors.map(err => err);
     response.status = 400;
-    response.body = { error: errors };
+    response.body = { error: errors, response: response.body };
 };
 
 export const validateResponse = (status: number, schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
-        interface responseConfig {
-            status: string,
-            message: string,
-            data?: any
-        }
-        const response: responseConfig = ctx.response.body as responseConfig
-        console.log(ctx.response.status, ctx.response.body)
+        const response = ctx.response.body
         if (ctx.response.status === status) {
-            schema.parse(response.data)
+            schema.parse(response)
         }
         await next();
     } catch (error) {        
