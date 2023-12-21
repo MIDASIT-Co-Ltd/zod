@@ -1,4 +1,4 @@
-export const isJsonType = (receive: string): boolean => {
+const isJsonType = (receive: string): boolean => {
   try {
     const json = JSON.parse(receive);
     return (typeof json === "object");
@@ -21,7 +21,7 @@ function getStatus(sta?: number) {
   else return 200;
 }
 
-const ResponseHandler = (receive: any, response: any, status?: number) => {
+export const ResponseHandler = (receive: any, response: any, status?: number) => {
   const recvBody = getBody(receive);
  
   if(Object.hasOwnProperty.call(recvBody, 'body')) {
@@ -35,5 +35,3 @@ const ResponseHandler = (receive: any, response: any, status?: number) => {
     response.status = getStatus(status);
   }
 }
-
-export { ResponseHandler};

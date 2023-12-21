@@ -1,5 +1,5 @@
 import { Context, Response } from "oak/mod.ts";
-import { z } from 'zod';
+import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
 
