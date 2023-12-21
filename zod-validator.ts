@@ -1,13 +1,13 @@
 import { Context, Response } from "oak/mod.ts";
 import { z } from 'zod';
 import { ZodError, ZodRawShape } from "zod";
+import { ResponseHandler } from "./response-handler.ts";
 
 function handleZodError(error: ZodError, response: Response) {
     const errors = error.errors.map(err => err);
     response.status = 400;
     response.body = { error: errors, response: response.body };
 };
-
 
 export const executeAndValidateResponses = (execute: Function, resList: [{status: 200, schema: z.ZodSchema}]) => async(ctx: Context, next: any) => {
     interface RequestConfig {
@@ -26,11 +26,11 @@ export const executeAndValidateResponses = (execute: Function, resList: [{status
     };
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
-    const response = execute(request);
+    ResponseHandler(await execute(request), ctx.response)
 
     try {
         resList.forEach((res) =>{
-            if(res.status == response.status) res.schema.parse(response.result)
+            if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
         })
         await next();
     } catch (error) {
