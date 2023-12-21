@@ -9,7 +9,7 @@ function handleZodError(error: ZodError, response: Response) {
     response.body = { error: errors, response: response.body };
 };
 
-export const executeAndValidateResponses = (execute: Function, resList: [{status: 200, schema: z.ZodSchema}]) => async(ctx: Context, next: any) => {
+export const executeAndValidateResponses = (execute: Function, resList: Array<{ status: number; schema: z.ZodSchema }>) => async(ctx: Context, next: any) => {
     interface RequestConfig {
         body?: any,
         param?: any,
