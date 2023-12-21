@@ -237,6 +237,10 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
             const schema = await getSchemaObject(moduleName, schemaName, schemaUrl)
             responses[match![0]] = {description:match![1], schema:schema}
         }
+
+        if (middleware.includes('executeAndValidateResponse')) {
+            console.log(middleware)
+        }
     }
 
     return responses;
