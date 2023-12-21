@@ -239,7 +239,6 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
         }
 
         if (middleware.includes('executeAndValidateResponse')) {
-            console.log(middleware)
             const regex = /{status: (\d+), schema: (functionSchemas\.\w+)}/g;
             let matches;
             while ((matches = regex.exec(middleware)) !== null) {
