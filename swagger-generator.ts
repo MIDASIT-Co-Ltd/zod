@@ -1,5 +1,5 @@
 import { z, registerEndpoint } from "./swagger-utils.ts";
-import * as path from "path/mod.ts";
+import * as path from "std/path/mod.ts";
 
 export const generateRegister = async(routerUrl: string, schemaUrl: string, deniedMiddlewares: string[]) => {
     const code = await Deno.readTextFile(routerUrl);

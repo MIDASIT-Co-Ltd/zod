@@ -4,6 +4,6 @@
       "zodOpenapi":"npm:@asteasolutions/zod-to-openapi@6.3.0",
       "zod": "npm:zod",
       "yaml/": "https://esm.sh/v125/yaml@2.3.1/",
-      "path/": "https://deno.land/std@0.209.0/path/"
+      "std/": "https://deno.land/std@0.209.0/"
     }
 }
