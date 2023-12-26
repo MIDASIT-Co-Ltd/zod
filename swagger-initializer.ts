@@ -15,7 +15,7 @@ export async function initSwagger(serverUrl: string, routerUrl: string, schemaPa
 
     
     const SwaggerApp = textEncorder.encode(swaggerAppContent);
-    Deno.writeFileSync(`${writePath}/swagger-ui.html`, SwaggerApp)
+    Deno.writeFileSync(`${writePath}/swagger-app.ts`, SwaggerApp)
 }
 
 const swaggerUIContent = `
