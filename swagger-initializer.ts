@@ -12,22 +12,15 @@ export async function initSwagger(serverUrl: string, routerUrl: string, schemaPa
     writeDocumentation(writePath, serverUrl);
 
     const textEncorder = new TextEncoder();
-    const Contents = textEncorder.encode(htmlContent);
-    Deno.writeFileSync(`${writePath}/swagger-ui.html`, Contents)
+    const SwaggerUI = textEncorder.encode(swaggerUIContent);
+    Deno.writeFileSync(`${writePath}/swagger-ui.html`, SwaggerUI)
 
-    const swaggerApp = new Application();
-    swaggerApp.use(async (ctx) => {
-        await send(ctx, ctx.request.url.pathname, {
-            root: writePath,
-            index: "swagger-ui.html",
-        });
-    })
-
-    console.log(`Swagger is listening on port 3000`);
-    swaggerApp.listen({ port: 3000});
+    
+    const SwaggerApp = textEncorder.encode(swaggerAppContent);
+    Deno.writeFileSync(`${writePath}/swagger-ui.html`, SwaggerApp)
 }
 
-const htmlContent = `
+const swaggerUIContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,4 +48,20 @@ const htmlContent = `
     </script>
 </body>
 </html>
+`;
+
+const swaggerAppContent = `
+import { Application } from "https://deno.land/x/oak@v12.6.1/mod.ts";
+import { send } from "https://deno.land/x/oak@v12.6.1/send.ts";
+
+const swaggerApp = new Application();
+swaggerApp.use(async (ctx) => {
+    await send(ctx, ctx.request.url.pathname, {
+        root: './',
+        index: "swagger-ui.html",
+    });
+})
+
+console.log(\`Swagger is listening on port 3000\`);
+swaggerApp.listen({ port: 3000});
 `;
