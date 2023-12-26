@@ -1,5 +1,5 @@
-import { Application } from "oak/mod.ts";
-import { send } from "oak/send.ts";
+import { Application } from "https://deno.land/x/oak@v12.6.1/mod.ts";
+import { send } from "https://deno.land/x/oak@v12.6.1/send.ts";
 
 const swaggerApp = new Application();
 swaggerApp.use(async (ctx) => {
