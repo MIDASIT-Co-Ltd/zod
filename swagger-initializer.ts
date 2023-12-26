@@ -3,20 +3,20 @@ import { writeDocumentation } from "./swagger-utils.ts";
 import { Router } from 'oak/mod.ts'
 import { parse } from "yaml/es2022/yaml.mjs";
 
-export async function initSwagger(serverUrl: string, routerUrl: string, schemaPath: string, writePath: string, deniedMiddlewares: string[]) {    
+export async function initSwagger(serverUrl: string, routerPath: string, schemaPath: string, writePath: string, deniedMiddlewares: string[]) {    
     if (schemaPath.startsWith('.')) {
         schemaPath = schemaPath.substring(1);
     }
     
-    await generateRegister(routerUrl, schemaPath, deniedMiddlewares);
+    await generateRegister(routerPath, schemaPath, deniedMiddlewares);
     writeDocumentation(writePath, serverUrl);
 }
 
-export function transplantSwagger(apiSpecPath: string, router: Router) {
+export function transplantSwagger(writePath: string, router: Router) {
     router.get(
         '/swagger', 
         (ctx) => {
-          const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(Deno.cwd() + apiSpecPath)))
+          const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(Deno.cwd() + writePath + '/openapi-docs.yml')))
           const ui = `<!DOCTYPE html>
           <html lang="en">
           <head>

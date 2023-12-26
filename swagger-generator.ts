@@ -1,13 +1,13 @@
 import { z, registerEndpoint } from "./swagger-utils.ts";
 import * as path from "std/path/mod.ts";
 
-export const generateRegister = async(routerUrl: string, schemaUrl: string, deniedMiddlewares: string[]) => {
-    const code = await Deno.readTextFile(routerUrl);
+export const generateRegister = async(routerPath: string, schemaUrl: string, deniedMiddlewares: string[]) => {
+    const code = await Deno.readTextFile(routerPath);
     const routers = extractRouters(code);
 
 
     for (const [router, mainPath] of routers) {
-        const routerSection = extractRouterSection(code, router, routerUrl);
+        const routerSection = extractRouterSection(code, router, routerPath);
         const httpMethods = extractHttpMethods(routerSection);
 
         for (const methodToken of httpMethods) {
@@ -31,7 +31,7 @@ function extractRouters(code: string): string[][] {
     return matches.map(match => [match[2], match[1]]);
 }
 
-function extractRouterSection(text: string, routerName: string, routerUrl: string): string {
+function extractRouterSection(text: string, routerName: string, routerPath: string): string {
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
@@ -44,7 +44,7 @@ function extractRouterSection(text: string, routerName: string, routerUrl: strin
 
         const currentWorkingDirectory = Deno.cwd();
 
-        const relativePath = routerUrl;
+        const relativePath = routerPath;
         
         const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
         const directoryPath = path.dirname(absolutePath);
