@@ -1,5 +1,3 @@
-import { Application } from "oak/mod.ts";
-import { send } from "oak/send.ts";
 import { generateRegister } from "./swagger-generator.ts";
 import { writeDocumentation } from "./swagger-utils.ts";
 
