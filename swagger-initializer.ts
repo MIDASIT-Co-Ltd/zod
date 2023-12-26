@@ -38,6 +38,11 @@ export function transplantSwagger(apiSpecPath: string, router: Router) {
                           spec: openApiSpec,
                           dom_id: "#swagger-ui",
                           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+                          plugins: [
+                            components: {
+                                topbar: () => null
+                            }
+                          ],
                           layout: "StandaloneLayout"
                       });
                   };
