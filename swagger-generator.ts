@@ -267,8 +267,8 @@ function extractSummary(middlewares: string[], deniedMiddlewares: string[]): str
 async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema | undefined> {
     try {
         const module = await import('file://' + Deno.cwd() + schemaUrl + `/${moduleName}.ts`);
-        if (module.default && schemaName in module.default) {
-            return module.default[schemaName];
+        if (schemaName in module) {
+            return module[schemaName];
         } else {
             console.log(`Module loaded but schema not found in default export: ${schemaName}`);
         }
