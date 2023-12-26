@@ -27,7 +27,7 @@ export async function initSwagger(serverUrl: string, routerUrl: string, schemaPa
         <script>
             window.onload = () => {
                 window.ui = SwaggerUIBundle({
-                    url: ${writePath} + "openapi-docs.yml",
+                    url: "${writePath}" + "/openapi-docs.yml",
                     dom_id: "#swagger-ui",
                     presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
                     layout: "StandaloneLayout"
@@ -46,7 +46,7 @@ export async function initSwagger(serverUrl: string, routerUrl: string, schemaPa
     swaggerApp.use(async (ctx) => {
         await send(ctx, ctx.request.url.pathname, {
             root: Deno.cwd(),
-            index: ${writePath} + "/swagger-ui.html",
+            index: "${writePath}" + "/swagger-ui.html",
         });
     })
     
