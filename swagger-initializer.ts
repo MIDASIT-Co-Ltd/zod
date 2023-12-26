@@ -45,7 +45,7 @@ export async function initSwagger(serverUrl: string, routerUrl: string, schemaPa
     const swaggerApp = new Application();
     swaggerApp.use(async (ctx) => {
         await send(ctx, ctx.request.url.pathname, {
-            root: ${writePath},
+            root: Deno.cwd() + ${writePath},
             index: "swagger-ui.html",
         });
     })
