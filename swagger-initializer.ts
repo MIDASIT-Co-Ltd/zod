@@ -33,15 +33,21 @@ export function transplantSwagger(apiSpecPath: string, router: Router) {
               <script src="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-standalone-preset.js" crossorigin></script>
               <script>
                   const openApiSpec = ${apiSpec}
+
+                  const HideTopBarPlugin = function() {
+                    return {
+                        components: {
+                        Topbar: () => null
+                        }
+                    };
+                    };
                   window.onload = () => {
                       window.ui = SwaggerUIBundle({
                           spec: openApiSpec,
                           dom_id: "#swagger-ui",
                           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
                           plugins: [
-                            components: {
-                                topbar: () => null
-                            }
+                            HideTopBarPlugin
                           ],
                           layout: "StandaloneLayout"
                       });
