@@ -22,8 +22,7 @@ function handleZodError(error: ZodError, response: Response) {
     const combinedErrors = [...existingErrors, ...newErrors];
 
     response.status = 400;
-    //@ts-ignore: body has error
-    response.body.error = combinedErrors;
+    response.body = { error: combinedErrors };
 }
 
 export const executeAndValidateResponses = (execute: Function, resList: Array<{ status: number; schema: z.ZodSchema }>) => async(ctx: Context, next: any) => {
@@ -52,9 +51,9 @@ export const executeAndValidateResponses = (execute: Function, resList: Array<{ 
         await next();
     } catch (error) {
         if (error instanceof z.ZodError) {
-            handleZodError(error, ctx.response);
-            //@ts-ignore: body has response
-            ctx.response.body.response = ctx.response.body
+            const errors = error.errors.map(err => err);
+            ctx.response.status = 400;
+            ctx.response.body = {error: errors, response: ctx.response.body};
         } 
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
@@ -71,7 +70,9 @@ export const validateResponse = (status: number, schema: z.ZodSchema) => async (
         await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
-            handleZodError(error, ctx.response);
+            const errors = error.errors.map(err => err);
+            ctx.response.status = 400;
+            ctx.response.body = {error: errors, response: ctx.response.body};
         }
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
