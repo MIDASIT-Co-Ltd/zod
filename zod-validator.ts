@@ -33,14 +33,15 @@ export const executeAndValidateResponses = (execute: Function, resList: Array<{ 
         resList.forEach((res) =>{
             if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
         })
+        await next();
     } catch (error) {
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
+        } 
+        else if (error instanceof HttpError) {
+            throw createHttpError(error.status, error.message);
         }
     }
-    await next();
 }
 
 export const validateResponse = (status: number, schema: z.ZodSchema) => async (ctx: Context, next: any) => {
@@ -49,14 +50,15 @@ export const validateResponse = (status: number, schema: z.ZodSchema) => async (
         if (ctx.response.status === status) {
             schema.parse(response)
         }
+        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
+        }
+        else if (error instanceof HttpError) {
+            throw createHttpError(error.status, error.message);
         }
     }
-    await next();
 };
 
 export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: any) => { 
@@ -64,14 +66,15 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
         const body = await ctx.request.body().value;
         ctx.state.request = {body : body}
         schema.parse(body);
+        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
+        }
+        else if (error instanceof HttpError) {
+            throw createHttpError(error.status, error.message);
         }
     }
-    await next();
 };
 
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
@@ -110,14 +113,15 @@ export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next
             headersObj[key.toUpperCase()] = value;
         }
         ctx.state.header = uppercaseKeys(schema as z.ZodObject<ZodRawShape>).parse(headersObj)
+        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
+        } 
+        else if (error instanceof HttpError) {
+            throw createHttpError(error.status, error.message);
         }
     }
-    await next();
 }
 
 function uppercaseKeys<T extends ZodRawShape>(schema: z.ZodObject<T>): z.ZodObject<T> {
