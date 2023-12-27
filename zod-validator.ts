@@ -5,7 +5,14 @@ import { ResponseHandler } from "./response-handler.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 
 function handleZodError(error: ZodError, response: Response) {
-    const newErrors = error.errors.map(err => err);
+    const newErrors = error.errors.map(err => ({
+        message: err.message,
+        //@ts-ignore: body has error
+
+        received: err.received,
+        path: err.path.join('.'),
+        code: err.code
+    }));
 
     let existingErrors = [];
     
