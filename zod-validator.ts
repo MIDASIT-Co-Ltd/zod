@@ -1,7 +1,8 @@
-import { Context, Response } from "oak/mod.ts";
+import { Context, HttpError, Response } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
+import { createHttpError } from "std/http/http_errors.ts";
 
 function handleZodError(error: ZodError, response: Response) {
     const errors = error.errors.map(err => err);
@@ -82,8 +83,9 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
+        }
+        else if (error instanceof HttpError) {
+            createHttpError(error.status, error.message)
         }
     }
 };  
@@ -96,8 +98,6 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
     catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            console.error('알 수 없는 오류:', error);
         }
     }
     await next();
