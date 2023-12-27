@@ -232,13 +232,6 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
 
     for (const middleware of middlewares) {
         if (middleware.includes('validateResponse')) {
-            const match = middleware.match(/validateResponse\(([^)]+)\)/)?.[1].split(', ');
-            const [moduleName, schemaName] = match![1].split('.').slice(-2);
-            const schema = await getSchemaObject(moduleName, schemaName, schemaUrl)
-            responses[match![0]] = {description:match![1], schema:schema}
-        }
-
-        if (middleware.includes('executeAndValidateResponse')) {
             const regex = /{status: (\d+), schema: (functionSchemas\.\w+)}/g;
             let matches;
             while ((matches = regex.exec(middleware)) !== null) {
@@ -257,8 +250,8 @@ function extractSummary(middlewares: string[], deniedMiddlewares: string[]): str
     const combinedMiddlewares = [...deniedMiddlewares, ...definedMiddlewares];
     let summary = middlewares.find(middleware => !combinedMiddlewares.some(keyword => middleware.includes(keyword))) ?? '';
 
-    if (summary.includes('executeAndValidateResponse')) {
-        summary = summary.match(/executeAndValidateResponses\(\s*(\w+)/)![1]
+    if (summary.includes('usecaseWrapper')) {
+        summary = summary.match(/usecaseWrapper\(\s*(\w+)/)![1]
     }
     
     return summary;
