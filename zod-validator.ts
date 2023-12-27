@@ -1,4 +1,4 @@
-import { Context, Response } from "oak/mod.ts";
+import { Context, HttpError, Response } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
@@ -7,7 +7,7 @@ import { createHttpError } from "std/http/http_errors.ts";
 function handleZodError(error: ZodError, response: Response) {
     const errors = error.errors.map(err => err);
     response.status = 400;
-    response.body = { error: errors, response: response.body }; 
+    response.body = { error: errors, response: response.body };
 };
 
 export const executeAndValidateResponses = (execute: Function, resList: Array<{ status: number; schema: z.ZodSchema }>) => async(ctx: Context, next: any) => {
@@ -79,14 +79,13 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         const params = Object.fromEntries(ctx.request.url.searchParams);
         ctx.state.request = {params : params}        
         ctx.state.param = schema.parse(params);
-    
         await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } else {    
-            ctx.response.status = error.status;
-            ctx.response.body = error.message;
+        }
+        else if (error instanceof HttpError) {
+            throw createHttpError(error.status, error.message);
         }
     }
 };  
