@@ -4,11 +4,28 @@ import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 
+interface Response {
+    status: number;
+    body?: any;
+}
+
 function handleZodError(error: ZodError, response: Response) {
-    const errors = error.errors.map(err => err);
+    const newErrors = error.errors.map(err => ({
+        message: err.message,
+        path: err.path.join('.'),
+        code: err.code
+    }));
+
+    let existingErrors = [];
+    if (response.body && Array.isArray(response.body.error)) {
+        existingErrors = response.body.error;
+    }
+
+    const combinedErrors = [...existingErrors, ...newErrors];
+
     response.status = 400;
-    response.body = { error: errors, response: response.body };
-};
+    response.body = { error: combinedErrors, response: response.body };
+}
 
 export const executeAndValidateResponses = (execute: Function, resList: Array<{ status: number; schema: z.ZodSchema }>) => async(ctx: Context, next: any) => {
     interface RequestConfig {
