@@ -1,4 +1,4 @@
-import { Context, HttpError, Response } from "oak/mod.ts";
+import { Context, Response } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
@@ -8,7 +8,6 @@ function handleZodError(error: ZodError, response: Response) {
     const errors = error.errors.map(err => err);
     response.status = 400;
     response.body = { error: errors, response: response.body }; 
-    throw error;
 };
 
 export const executeAndValidateResponses = (execute: Function, resList: Array<{ status: number; schema: z.ZodSchema }>) => async(ctx: Context, next: any) => {
@@ -80,14 +79,16 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         const params = Object.fromEntries(ctx.request.url.searchParams);
         ctx.state.request = {params : params}        
         ctx.state.param = schema.parse(params);
+    
+        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
         } else {    
-            console.error('알 수 없는 오류:', error);
+            ctx.response.status = error.status;
+            ctx.response.body = error.message;
         }
     }
-    await next();
 };  
 
 export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
