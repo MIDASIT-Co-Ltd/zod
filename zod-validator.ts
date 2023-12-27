@@ -78,6 +78,7 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         const params = Object.fromEntries(ctx.request.url.searchParams);
         ctx.state.request = {params : params}        
         ctx.state.param = schema.parse(params);
+        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
@@ -85,7 +86,6 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
             console.error('알 수 없는 오류:', error);
         }
     }
-    await next();
 };  
 
 export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
