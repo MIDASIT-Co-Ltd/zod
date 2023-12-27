@@ -25,7 +25,7 @@ function handleZodError(error: ZodError, response: Response) {
     response.body = { error: combinedErrors };
 }
 
-export const executeAndValidateResponses = (execute: Function, resList: Array<{ status: number; schema: z.ZodSchema }>) => async(ctx: Context, next: any) => {
+export const usecaseWrapper = (execute: Function) => async(ctx: Context, next: any) => {
     interface RequestConfig {
         body?: any,
         param?: any,
@@ -43,7 +43,10 @@ export const executeAndValidateResponses = (execute: Function, resList: Array<{ 
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
     ResponseHandler(await execute(request), ctx.response)
+    await next();
+}
 
+export const validateResponse = (resList: Array<{ status: number; schema: z.ZodSchema }>) => async (ctx: Context, next: any) => {
     try {
         resList.forEach((res) =>{
             if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
@@ -55,25 +58,6 @@ export const executeAndValidateResponses = (execute: Function, resList: Array<{ 
             ctx.response.status = 400;
             ctx.response.body = {error: errors, response: ctx.response.body};
         } 
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
-    }
-}
-
-export const validateResponse = (status: number, schema: z.ZodSchema) => async (ctx: Context, next: any) => {
-    try {
-        const response = ctx.response.body
-        if (ctx.response.status === status) {
-            schema.parse(response)
-        }
-        await next();
-    } catch (error) {        
-        if (error instanceof z.ZodError) {
-            const errors = error.errors.map(err => err);
-            ctx.response.status = 400;
-            ctx.response.body = {error: errors, response: ctx.response.body};
-        }
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
         }
