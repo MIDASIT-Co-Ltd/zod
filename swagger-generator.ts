@@ -273,9 +273,6 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
                     request.headers = request.headers ? request.headers.merge(headerSchema) : headerSchema;
                 }
             }
-                
-
-            }
         }
     }
 
