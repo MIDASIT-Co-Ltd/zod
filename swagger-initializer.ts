@@ -3,12 +3,20 @@ import { writeDocumentation } from "./swagger-utils.ts";
 import { Router } from 'oak/mod.ts'
 import { parse } from "yaml/es2022/yaml.mjs";
 
-export async function initSwagger(serverUrl: string, routerPath: string, schemaPath: string, writePath: string, deniedMiddlewares: string[]) {    
+export interface customMiddleware {
+    name: string;
+    header?: Array<{ [key: string]: string }>;
+    path?: Array<{ [key: string]: string }>;
+    param?: Array<{ [key: string]: string }>;
+    body?: Array<{ [key: string]: string }>;
+}
+
+export async function initSwagger(serverUrl: string, routerPath: string, schemaPath: string, writePath: string, deniedMiddlewares: string[], customMiddlewares: customMiddleware[]) {    
     if (schemaPath.startsWith('.')) {
         schemaPath = schemaPath.substring(1);
     }
     
-    await generateRegister(routerPath, schemaPath, deniedMiddlewares);
+    await generateRegister(routerPath, schemaPath, deniedMiddlewares, customMiddlewares);
     writeDocumentation(writePath, serverUrl);
 }
 

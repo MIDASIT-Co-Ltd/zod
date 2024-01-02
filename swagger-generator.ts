@@ -1,7 +1,9 @@
 import { z, registerEndpoint } from "./swagger-utils.ts";
+import { ZodObject } from "zod";
 import * as path from "std/path/mod.ts";
+import {customMiddleware} from "./swagger-initializer.ts"
 
-export const generateRegister = async(routerPath: string, schemaUrl: string, deniedMiddlewares: string[]) => {
+export const generateRegister = async(routerPath: string, schemaUrl: string, deniedMiddlewares: string[], customMiddlewares: customMiddleware[]) => {
     const code = await Deno.readTextFile(routerPath);
     const routers = extractRouters(code);
 
@@ -16,7 +18,7 @@ export const generateRegister = async(routerPath: string, schemaUrl: string, den
             const summary = extractSummary(middlewares, deniedMiddlewares);
             const tag = router;
 
-            const request = await createRequestConfig(middlewares, schemaUrl);
+            const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
             const responses = await createResponseConfig(middlewares, schemaUrl);
 
             registerEndpoint(method, path, summary, tag, request, responses);
@@ -178,7 +180,7 @@ interface RequestConfig {
         schema?: z.ZodSchema;
     };
 }
-async function createRequestConfig(middlewares: string[], schemaUrl: string): Promise<RequestConfig> {
+async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
     for (const middleware of middlewares) {
@@ -187,7 +189,8 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string): Pr
 
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                request.query = await getSchemaObject(moduleName, schemaName, schemaUrl);
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                request.query = request.query! ? request.query.merge(newSchema) : newSchema; 
             }
         }
 
@@ -196,9 +199,9 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string): Pr
 
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                request.body = {
-                    schema: await getSchemaObject(moduleName, schemaName, schemaUrl)
-                }
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                const schema = request.body! && request.body.schema! ? request.body.schema.merge(newSchema) : newSchema;
+                request.body = {schema: schema}
             }
         }
 
@@ -207,7 +210,8 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string): Pr
             
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                request.params = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                request.params = request.params! ? request.params.merge(newSchema) : newSchema; 
             }
         }
 
@@ -216,7 +220,61 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string): Pr
             
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                request.headers = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                request.headers = request.headers! ? request.headers.merge(newSchema) : newSchema; 
+            }
+        }
+
+        for (const customMiddleware of customMiddlewares) {
+            if (middleware.includes(customMiddleware.name)) {
+                const match = middleware.match(new RegExp(`${customMiddleware.name}`));
+                
+                // Param 처리
+                if (customMiddleware.param) {
+                    const paramSchema = z.object(
+                        customMiddleware.param.reduce((acc, curr) => {
+                            acc[curr.key] = z.string(); // Zod 타입 인스턴스 사용
+                            return acc;
+                        }, {} as { [key: string]: z.ZodType<any, any, any> })
+                    );
+                    request.query = request.query ? request.query.merge(paramSchema) : paramSchema;
+                }
+                // Body 처리
+                if (customMiddleware.body) {
+                    const bodySchema = z.object(
+                        customMiddleware.body.reduce((acc, curr) => {
+                            acc[curr.key] = z.string();
+                            return acc;
+                        }, {} as { [key: string]: z.ZodType<any, any, any> })
+                    );
+                    request.body = request.body && request.body.schema ? 
+                        { schema: request.body.schema.merge(bodySchema) } : { schema: bodySchema };
+                }
+        
+                // Path 처리
+                if (customMiddleware.path) {
+                    const pathSchema = z.object(
+                        customMiddleware.path.reduce((acc, curr) => {
+                            acc[curr.key] = z.string();
+                            return acc;
+                        }, {} as { [key: string]: z.ZodType<any, any, any> })
+                    );
+                    request.params = request.params ? request.params.merge(pathSchema) : pathSchema;
+                }
+        
+                // Header 처리
+                if (customMiddleware.header) {
+                    const headerSchema = z.object(
+                        customMiddleware.header.reduce((acc, curr) => {
+                            acc[curr.key] = z.string();
+                            return acc;
+                        }, {} as { [key: string]: z.ZodType<any, any, any> })
+                    );
+                    request.headers = request.headers ? request.headers.merge(headerSchema) : headerSchema;
+                }
+            }
+                
+
             }
         }
     }
@@ -257,15 +315,13 @@ function extractSummary(middlewares: string[], deniedMiddlewares: string[]): str
     return summary;
 }
 
-async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema | undefined> {
+async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema> {
     try {
         const module = await import('file://' + Deno.cwd() + schemaUrl + `/${moduleName}.ts`);
-        if (schemaName in module) {
-            return module[schemaName];
-        } else {
-            console.log(`Module loaded but schema not found in default export: ${schemaName}`);
-        }
+        return module[schemaName];
+       
     } catch (error) {
         console.error(`Error importing module: ${moduleName}`, error);
+        throw error;
     }
 }
