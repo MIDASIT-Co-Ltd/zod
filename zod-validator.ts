@@ -42,7 +42,7 @@ export const usecaseWrapper = (execute: Function) => async(ctx: Context, next: a
     };
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
-    ResponseHandler(await execute(request), ctx.response)
+    ResponseHandler(await execute(request, ctx), ctx.response)
     await next();
 }
 
