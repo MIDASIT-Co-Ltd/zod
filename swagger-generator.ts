@@ -1,5 +1,5 @@
 import { z, registerEndpoint } from "./swagger-utils.ts";
-import { ZodObject } from "zod";
+import { ZodObject, custom } from "zod";
 import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
@@ -180,6 +180,27 @@ interface RequestConfig {
         schema?: z.ZodSchema;
     };
 }
+function mergeZodObject(obj1: z.ZodSchema | undefined, obj2: z.ZodSchema) {
+    if (obj1!) {
+        //@ts-ignore : obj1 is zodObject
+        return obj1.merge(obj2)
+    }
+    return obj2;
+}
+interface Value {
+    [key: string]: string;
+}
+function changeZodObject(values: Value[], name: string) {
+     const schema: { [key: string]: z.ZodString } = {};
+
+    values.forEach(value => {
+        Object.keys(value).forEach(key => {
+            schema[key] = z.string().openapi({example: value[key]});
+        });
+    });
+
+    return z.object(schema).openapi(name)
+}
 async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
@@ -190,8 +211,8 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
                 const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
-                //@ts-ignore : query is zodObject
-                request.query = request.query! ? request.query.merge(newSchema) : newSchema; 
+                
+                request.query = mergeZodObject(request.query, newSchema);
             }
         }
 
@@ -200,10 +221,10 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
 
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
-                //@ts-ignore : body.schema is zodObject
-                const schema = request.body! && request.body.schema! ? request.body.schema.merge(newSchema) : newSchema;
-                request.body = {schema: schema}
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl);
+
+                const schema = mergeZodObject(request.body?.schema, newSchema);
+                request.body = {schema: schema};
             }
         }
 
@@ -212,9 +233,9 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
-                //@ts-ignore : param is zodObject
-                request.params = request.params! ? request.params.merge(newSchema) : newSchema; 
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl);
+                
+                request.params = mergeZodObject(request.params, newSchema);
             }
         }
 
@@ -223,9 +244,9 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
-                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
-                //@ts-ignore : header is zodObject
-                request.headers = request.headers! ? request.headers.merge(newSchema) : newSchema; 
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl);
+
+                request.headers = mergeZodObject(request.headers, newSchema);
             }
         }
 
@@ -235,27 +256,22 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
                 
                 if (match) {
                     if (customMiddleware.header) {
-                        const newSchema = changeZodObject(customMiddleware.header);
-                        request.headers = request.headers! ? request.headers.merge(newSchema) : newSchema;
+                        const newSchema = changeZodObject(customMiddleware.header, customMiddleware.name);
+                        request.headers = mergeZodObject(request.headers, newSchema);
                     }
                     if (customMiddleware.body) {
-
+                        const newSchema = changeZodObject(customMiddleware.body, customMiddleware.name);
+                        const schema = mergeZodObject(request.body?.schema, newSchema);
+                        request.body = {schema: schema};
                     }
                     if (customMiddleware.param) {
-
+                        const newSchema = changeZodObject(customMiddleware.param, customMiddleware.name);
+                        request.query = mergeZodObject(request.query, newSchema);
                     }
                     if (customMiddleware.path) {
-
+                        const newSchema = changeZodObject(customMiddleware.path, customMiddleware.name);
+                        request.params = mergeZodObject(request.params, newSchema)
                     }
-                    /*
-                    headers.forEach(header => {
-                        Object.keys(header).forEach(key => {
-                            schema[key] = z.string().openapi({example: header[key]});
-                        });
-                    });
-
-                    return z.object(schema);
-                    */
                 }
             }
         }
@@ -263,21 +279,6 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
 
     return request;
 }
-interface Value {
-    [key: string]: string;
-}
-function changeZodObject(values: Value[]) {
-    let schema: { [key: string]: z.ZodString } = {};
-
-    values.forEach(value => {
-        Object.keys(value).forEach(key => {
-            schema[key] = z.string().openapi({example: value[key]});
-        });
-    });
-
-    return z.object(schema)
-}
-
 interface ResponseConfig {
     [status: string]: { description: string, schema?: z.ZodSchema }
 }
