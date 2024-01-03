@@ -189,7 +189,7 @@ function mergeZodObject(obj1: z.ZodSchema | undefined, obj2: z.ZodSchema) {
 interface Value {
     [key: string]: string;
 }
-function changeZodObject(values: Value[], name: string) {
+function changeZodObject(values: Value[]) {
      const schema: { [key: string]: z.ZodString } = {};
 
     values.forEach(value => {
@@ -198,7 +198,7 @@ function changeZodObject(values: Value[], name: string) {
         });
     });
 
-    return z.object(schema).openapi(name)
+    return z.object(schema)
 }
 async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares?: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
@@ -256,21 +256,21 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
                     
                     if (match) {
                         if (customMiddleware.header) {
-                            const newSchema = changeZodObject(customMiddleware.header, customMiddleware.name);
-                            request.headers = mergeZodObject(request.headers, newSchema);
+                            const newSchema = changeZodObject(customMiddleware.header);
+                            request.headers = mergeZodObject(request.headers, newSchema).openapi(customMiddleware.name);
                         }
                         if (customMiddleware.body) {
-                            const newSchema = changeZodObject(customMiddleware.body, customMiddleware.name);
-                            const schema = mergeZodObject(request.body?.schema, newSchema);
+                            const newSchema = changeZodObject(customMiddleware.body);
+                            const schema = mergeZodObject(request.body?.schema, newSchema).openapi(customMiddleware.name);
                             request.body = {schema: schema};
                         }
                         if (customMiddleware.param) {
-                            const newSchema = changeZodObject(customMiddleware.param, customMiddleware.name);
-                            request.query = mergeZodObject(request.query, newSchema);
+                            const newSchema = changeZodObject(customMiddleware.param);
+                            request.query = mergeZodObject(request.query, newSchema).openapi(customMiddleware.name);
                         }
                         if (customMiddleware.path) {
-                            const newSchema = changeZodObject(customMiddleware.path, customMiddleware.name);
-                            request.params = mergeZodObject(request.params, newSchema)
+                            const newSchema = changeZodObject(customMiddleware.path);
+                            request.params = mergeZodObject(request.params, newSchema).openapi(customMiddleware.name);
                         }
                     }
                 }
