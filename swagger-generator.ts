@@ -190,6 +190,7 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
                 const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                //@ts-ignore : query is zodObject
                 request.query = request.query! ? request.query.merge(newSchema) : newSchema; 
             }
         }
@@ -200,6 +201,7 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
                 const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                //@ts-ignore : body.schema is zodObject
                 const schema = request.body! && request.body.schema! ? request.body.schema.merge(newSchema) : newSchema;
                 request.body = {schema: schema}
             }
@@ -211,6 +213,7 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
                 const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                //@ts-ignore : param is zodObject
                 request.params = request.params! ? request.params.merge(newSchema) : newSchema; 
             }
         }
@@ -221,6 +224,7 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             if (match && match[1]) {
                 const [moduleName, schemaName] = match[1].split('.').slice(-2);
                 const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl)
+                //@ts-ignore : header is zodObject
                 request.headers = request.headers! ? request.headers.merge(newSchema) : newSchema; 
             }
         }
@@ -229,54 +233,49 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
             if (middleware.includes(customMiddleware.name)) {
                 const match = middleware.match(new RegExp(`${customMiddleware.name}`));
                 
-                // Param 처리
-                if (customMiddleware.param) {
-                    const paramSchema = z.object(
-                        customMiddleware.param.reduce((acc, curr) => {
-                            acc[curr.key] = z.string(); // Zod 타입 인스턴스 사용
-                            return acc;
-                        }, {} as { [key: string]: z.ZodType<any, any, any> })
-                    );
-                    request.query = request.query ? request.query.merge(paramSchema) : paramSchema;
-                }
-                // Body 처리
-                if (customMiddleware.body) {
-                    const bodySchema = z.object(
-                        customMiddleware.body.reduce((acc, curr) => {
-                            acc[curr.key] = z.string();
-                            return acc;
-                        }, {} as { [key: string]: z.ZodType<any, any, any> })
-                    );
-                    request.body = request.body && request.body.schema ? 
-                        { schema: request.body.schema.merge(bodySchema) } : { schema: bodySchema };
-                }
-        
-                // Path 처리
-                if (customMiddleware.path) {
-                    const pathSchema = z.object(
-                        customMiddleware.path.reduce((acc, curr) => {
-                            acc[curr.key] = z.string();
-                            return acc;
-                        }, {} as { [key: string]: z.ZodType<any, any, any> })
-                    );
-                    request.params = request.params ? request.params.merge(pathSchema) : pathSchema;
-                }
-        
-                // Header 처리
-                if (customMiddleware.header) {
-                    const headerSchema = z.object(
-                        customMiddleware.header.reduce((acc, curr) => {
-                            acc[curr.key] = z.string();
-                            return acc;
-                        }, {} as { [key: string]: z.ZodType<any, any, any> })
-                    );
-                    request.headers = request.headers ? request.headers.merge(headerSchema) : headerSchema;
+                if (match) {
+                    if (customMiddleware.header) {
+                        const newSchema = changeZodObject(customMiddleware.header);
+                        request.headers = request.headers! ? request.headers.merge(newSchema) : newSchema;
+                    }
+                    if (customMiddleware.body) {
+
+                    }
+                    if (customMiddleware.param) {
+
+                    }
+                    if (customMiddleware.path) {
+
+                    }
+                    /*
+                    headers.forEach(header => {
+                        Object.keys(header).forEach(key => {
+                            schema[key] = z.string().openapi({example: header[key]});
+                        });
+                    });
+
+                    return z.object(schema);
+                    */
                 }
             }
         }
     }
 
     return request;
+}
+interface Value {
+    [key: string]: string;
+}
+function changeZodObject(values: Value[]) {
+    let schema: { [key: string]: z.ZodString } = {};
+
+    values.forEach(value => {
+        Object.keys(value).forEach(key => {
+            schema[key] = z.string().openapi({example: value[key]});
+        });
+    });
+
+    return z.object(schema)
 }
 
 interface ResponseConfig {
