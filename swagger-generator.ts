@@ -3,7 +3,7 @@ import { ZodObject, custom } from "zod";
 import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
-export const generateRegister = async(routerPath: string, schemaUrl: string, deniedMiddlewares: string[], customMiddlewares: customMiddleware[]) => {
+export const generateRegister = async(routerPath: string, schemaUrl: string, deniedMiddlewares?: string[], customMiddlewares?: customMiddleware[]) => {
     const code = await Deno.readTextFile(routerPath);
     const routers = extractRouters(code);
 
@@ -201,7 +201,7 @@ function changeZodObject(values: Value[], name: string) {
 
     return z.object(schema).openapi(name)
 }
-async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares: customMiddleware[]): Promise<RequestConfig> {
+async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares?: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
     for (const middleware of middlewares) {
@@ -302,9 +302,9 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
     return responses;
 }
 
-function extractSummary(middlewares: string[], deniedMiddlewares: string[]): string {
+function extractSummary(middlewares: string[], deniedMiddlewares?: string[]): string {
     const definedMiddlewares = ["validateBody", "validateParam", "validateResponse", "validatePath", "validateHeader"];
-    const combinedMiddlewares = [...deniedMiddlewares, ...definedMiddlewares];
+    const combinedMiddlewares = deniedMiddlewares! ? [...deniedMiddlewares, ...definedMiddlewares] : definedMiddlewares;
     let summary = middlewares.find(middleware => !combinedMiddlewares.some(keyword => middleware.includes(keyword))) ?? '';
 
     if (summary.includes('usecaseWrapper')) {
