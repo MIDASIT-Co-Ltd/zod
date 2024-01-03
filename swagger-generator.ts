@@ -1,9 +1,8 @@
 import { z, registerEndpoint } from "./swagger-utils.ts";
-import { ZodObject, custom } from "zod";
 import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
-export const generateRegister = async(routerPath: string, schemaUrl: string, deniedMiddlewares?: string[], customMiddlewares?: customMiddleware[]) => {
+export const generateRegister = async(routerPath: string, schemaUrl: string, customMiddlewares?: customMiddleware[]) => {
     const code = await Deno.readTextFile(routerPath);
     const routers = extractRouters(code);
 
@@ -15,7 +14,7 @@ export const generateRegister = async(routerPath: string, schemaUrl: string, den
         for (const methodToken of httpMethods) {
             const method = extractMethod(methodToken);
             const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
-            const summary = extractSummary(middlewares, deniedMiddlewares);
+            const summary = extractSummary(middlewares, customMiddlewares);
             const tag = router;
 
             const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
@@ -302,9 +301,9 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
     return responses;
 }
 
-function extractSummary(middlewares: string[], deniedMiddlewares?: string[]): string {
+function extractSummary(middlewares: string[], customMiddlewares?: customMiddleware[]): string {
     const definedMiddlewares = ["validateBody", "validateParam", "validateResponse", "validatePath", "validateHeader"];
-    const combinedMiddlewares = deniedMiddlewares! ? [...deniedMiddlewares, ...definedMiddlewares] : definedMiddlewares;
+    const combinedMiddlewares = customMiddlewares! ? [...customMiddlewares.map(customMiddleware => customMiddleware.name), ...definedMiddlewares] : definedMiddlewares;
     let summary = middlewares.find(middleware => !combinedMiddlewares.some(keyword => middleware.includes(keyword))) ?? '';
 
     if (summary.includes('usecaseWrapper')) {
