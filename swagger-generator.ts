@@ -293,6 +293,7 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
             let matches;
             while ((matches = regex.exec(middleware)) !== null) {
                 const [moduleName, schemaName] = matches[2].split('.').slice(-2);
+                console.log(moduleName, schemaName)
                 const schema = await getSchemaObject(moduleName, schemaName, schemaUrl)
                 responses[matches[1]] = { description: matches[2], schema: schema};
             }
