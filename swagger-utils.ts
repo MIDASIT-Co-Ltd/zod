@@ -50,6 +50,7 @@ export function writeDocumentation(writePath: string, serverUrl: string) {
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
 export function registerEndpoint(
+    bearerAuthName: string,
     method: Method, 
     path: string, 
     summary: string,
@@ -105,6 +106,7 @@ export function registerEndpoint(
     });
 
     registry.registerPath({
+        security : [{[bearerAuthName]: []}],
         method : method,
         path : path,
         summary : summary,
@@ -115,7 +117,7 @@ export function registerEndpoint(
 }
 
 export function registerComponent() {
-    registry.registerComponent(
+    const bearerAuth = registry.registerComponent(
         'securitySchemes',
         'X-AUTH-TOKEN',
         {
@@ -124,7 +126,7 @@ export function registerComponent() {
           bearerFormat: 'JWT',
         }
       );
-  
+    return bearerAuth;
 }
 
 export {z}

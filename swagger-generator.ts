@@ -6,6 +6,7 @@ export const generateRegister = async(routerPath: string, schemaUrl: string, cus
     const code = await Deno.readTextFile(routerPath);
     const routers = extractRouters(code);
 
+    const bearerAuth = registerComponent();
 
     for (const [router, mainPath] of routers) {
         const routerSection = extractRouterSection(code, router, routerPath);
@@ -20,10 +21,9 @@ export const generateRegister = async(routerPath: string, schemaUrl: string, cus
             const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
             const responses = await createResponseConfig(middlewares, schemaUrl);
 
-            registerEndpoint(method, path, summary, tag, request, responses);
+            registerEndpoint(bearerAuth.name, method, path, summary, tag, request, responses);
         }
     }
-    registerComponent();
 }
 
 function extractRouters(code: string): string[][] {
