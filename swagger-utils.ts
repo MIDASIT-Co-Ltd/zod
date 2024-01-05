@@ -124,6 +124,7 @@ export function registerComponent() {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
+          name: 'X-AUTH-TOKEN'
         }
       );
     return bearerAuth;
