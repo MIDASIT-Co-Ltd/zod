@@ -1,4 +1,4 @@
-import { z, registerEndpoint } from "./swagger-utils.ts";
+import { z, registerEndpoint, registerComponent } from "./swagger-utils.ts";
 import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
@@ -23,6 +23,7 @@ export const generateRegister = async(routerPath: string, schemaUrl: string, cus
             registerEndpoint(method, path, summary, tag, request, responses);
         }
     }
+    registerComponent();
 }
 
 function extractRouters(code: string): string[][] {

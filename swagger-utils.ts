@@ -115,4 +115,17 @@ export function registerEndpoint(
     });
 }
 
+export function registerComponent() {
+    registry.registerComponent(
+        'securitySchemes',
+        'X-AUTH-TOKEN',
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        }
+      );
+  
+}
+
 export {z}
