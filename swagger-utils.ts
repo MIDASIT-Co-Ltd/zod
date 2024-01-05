@@ -121,10 +121,9 @@ export function registerComponent() {
         'securitySchemes',
         'X-AUTH-TOKEN',
         {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-          name: 'X-AUTH-TOKEN'
+          type: 'apiKey',
+          name: 'X-AUTH-TOKEN',
+          in: 'header'
         }
       );
     return bearerAuth;
