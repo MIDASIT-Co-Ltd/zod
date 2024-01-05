@@ -31,6 +31,7 @@ function getOpenApiDocumentation(serverUrl: string) {
                 description: 'This is the MIDAS API specification',
             },
             servers: [{ url: serverUrl }],
+            security: [{"bearer": ["value1", "value2"]}]
         });
     } catch(error){
         console.log(error);

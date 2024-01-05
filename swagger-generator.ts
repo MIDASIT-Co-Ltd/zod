@@ -257,20 +257,20 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
                     if (match) {
                         if (customMiddleware.header) {
                             const newSchema = changeZodObject(customMiddleware.header);
-                            request.headers = mergeZodObject(request.headers, newSchema).openapi(customMiddleware.name);
+                            request.headers = mergeZodObject(request.headers, newSchema);
                         }
                         if (customMiddleware.body) {
                             const newSchema = changeZodObject(customMiddleware.body);
-                            const schema = mergeZodObject(request.body?.schema, newSchema).openapi(customMiddleware.name);
+                            const schema = mergeZodObject(request.body?.schema, newSchema);
                             request.body = {schema: schema};
                         }
                         if (customMiddleware.param) {
                             const newSchema = changeZodObject(customMiddleware.param);
-                            request.query = mergeZodObject(request.query, newSchema).openapi(customMiddleware.name);
+                            request.query = mergeZodObject(request.query, newSchema);
                         }
                         if (customMiddleware.path) {
                             const newSchema = changeZodObject(customMiddleware.path);
-                            request.params = mergeZodObject(request.params, newSchema).openapi(customMiddleware.name);
+                            request.params = mergeZodObject(request.params, newSchema);
                         }
                     }
                 }
