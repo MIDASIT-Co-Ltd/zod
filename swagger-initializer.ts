@@ -26,7 +26,7 @@ export function transplantSwagger(omittedPath: string, writePath: string, router
     router.get(
         omittedPath + '/swagger', 
         (ctx) => {
-          const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(Deno.cwd() + writePath + '/openapi-docs.yml')))
+          const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writePath + '/openapi-docs.yml')))
           const ui = `<!DOCTYPE html>
           <html lang="en">
           <head>
