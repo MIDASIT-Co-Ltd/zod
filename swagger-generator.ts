@@ -119,6 +119,8 @@ function extractPathAndMiddlewares(token: string, mainPath: string): [string, st
     const path = rawPath.replace(/:([^\/]+)/g, '{$1}')
 
     const middlewares = result.slice(1);
+    if (path == '/') return ['/' + mainPath, middlewares];
+
     return ['/' + mainPath + path, middlewares];
 }
 
