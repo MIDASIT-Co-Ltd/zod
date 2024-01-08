@@ -96,13 +96,13 @@ function extractHttpMethods(str: string): string[] {
             if (stack === 0) {
                 let token = str.substring(currentIndex, end);
                 const descriptionIndex = str.indexOf('//', end);
-                if (descriptionIndex !== -1) {
+                if (descriptionIndex !== -1 && descriptionIndex - end < 4) {
                     const lineEnd = str.indexOf('\n', descriptionIndex);
                     const descriptionContent = str.substring(descriptionIndex, lineEnd !== -1 ? lineEnd : str.length).trim();
                     token += " " + descriptionContent;
                 }
-                console.log(token);
                 tokens.push(token);
+                console.log(token);
                 currentIndex = end;
             } else {
                 break;
