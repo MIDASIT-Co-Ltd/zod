@@ -15,7 +15,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
         for (const methodToken of httpMethods) {
             const method = extractMethod(methodToken);
             const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
-            const summary = extractSummary(middlewares, customMiddlewares);
+            const summary = extractSummary(methodToken, middlewares, customMiddlewares);
             const tag = router;
 
             const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
@@ -102,7 +102,6 @@ function extractHttpMethods(str: string): string[] {
                     token += " " + descriptionContent;
                 }
                 tokens.push(token);
-                console.log(token);
                 currentIndex = end;
             } else {
                 break;
@@ -311,7 +310,11 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
     return responses;
 }
 
-function extractSummary(middlewares: string[], customMiddlewares?: customMiddleware[]): string {
+function extractSummary(token: string, middlewares: string[], customMiddlewares?: customMiddleware[]): string {
+    const tokenMatch = token.match(/\/\/\s*@description\s*:\s*(.+)/);
+    const description = tokenMatch ? tokenMatch[1].trim() : '';
+    if (description) return description;
+    
     const definedMiddlewares = ["validateBody", "validateParam", "validateResponse", "validatePath", "validateHeader"];
     const combinedMiddlewares = customMiddlewares! ? [...customMiddlewares.map(customMiddleware => customMiddleware.name), ...definedMiddlewares] : definedMiddlewares;
     let summary = middlewares.find(middleware => !combinedMiddlewares.some(keyword => middleware.includes(keyword))) ?? '';
