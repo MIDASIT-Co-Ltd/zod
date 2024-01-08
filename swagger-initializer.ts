@@ -11,13 +11,15 @@ export interface customMiddleware {
     body?: Array<{ [key: string]: string }>;
 }
 
-export async function initSwagger(serverUrl: string, routerPath: string, schemaPath: string, writePath: string, customMiddlewares?: customMiddleware[]) {    
-    if (schemaPath.startsWith('.')) {
+export async function initSwagger(serverUrl: string, omittedPath: string, routerPath: string, 
+    schemaPath: string, writePath: string, customMiddlewares?: customMiddleware[]) {    
+    
+        if (schemaPath.startsWith('.')) {
         schemaPath = schemaPath.substring(1);
     }
     
-    await generateRegister(routerPath, schemaPath, customMiddlewares);
-    writeDocumentation(writePath, serverUrl);
+    await generateRegister(omittedPath, routerPath, schemaPath, customMiddlewares);
+    writeDocumentation(writePath, serverUrl+omittedPath);
 }
 
 export function transplantSwagger(writePath: string, router: Router) {
