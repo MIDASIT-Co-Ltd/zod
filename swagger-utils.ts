@@ -98,7 +98,7 @@ export function registerEndpoint(
         };
         if (details.schema) {
             responses[statusCode].content = {
-                'application/json': {
+                '*/*': {
                     schema: details.schema
                 }
             };
