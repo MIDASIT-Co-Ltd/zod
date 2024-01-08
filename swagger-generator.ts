@@ -291,7 +291,7 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
 
     for (const middleware of middlewares) {
         if (middleware.includes('validateResponse')) {
-            const regex = /{status: (\d+), schema: (\w+\.\w+)}/g;
+            const regex = /{status\s*:\s*(\d+),\s*schema\s*:\s*(\w+\.\w+)}/g;
             let matches;
             while ((matches = regex.exec(middleware)) !== null) {
                 const [moduleName, schemaName] = matches[2].split('.').slice(-2);
