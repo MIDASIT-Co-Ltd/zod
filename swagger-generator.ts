@@ -76,6 +76,7 @@ function extractHttpMethods(str: string): string[] {
     const methods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options', 'trace'];
     const tokens = [];
     let currentIndex = 0;
+    let description = '';
 
     while (currentIndex < str.length) {
         const foundMethod = methods.find(method => str.substring(currentIndex).startsWith('.' + method));
@@ -95,6 +96,11 @@ function extractHttpMethods(str: string): string[] {
 
             if (stack === 0) {
                 tokens.push(str.substring(currentIndex, end));
+                const descriptionIndex = str.indexOf('// @description :', end);
+                if (descriptionIndex !== -1) {
+                    const lineEnd = str.indexOf('\n', descriptionIndex);
+                    description = str.substring(descriptionIndex + '// @description :'.length, lineEnd !== -1 ? lineEnd : str.length).trim();
+                }
                 currentIndex = end;
             } else {
                 break;
@@ -103,7 +109,7 @@ function extractHttpMethods(str: string): string[] {
             currentIndex++;
         }
     }
-
+    console.log(description)
     return tokens;
 }
 
