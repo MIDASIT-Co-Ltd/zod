@@ -25,6 +25,46 @@ function handleZodError(error: ZodError, response: Response) {
     response.body = { error: combinedErrors };
 }
 
+interface ValidateRequestConfig {
+    body?: z.ZodSchema,
+    param?: z.ZodSchema,
+    header?: z.ZodSchema,
+    path?: z.ZodSchema,
+    usecase: Function,
+    useWrappedUsecase: boolean,
+    response?: Array<{ status: number; schema: z.ZodSchema }>
+}
+export const validator = (request: ValidateRequestConfig) => async(ctx: Context, next: any) => {
+    if (request.body) {
+        const validateMiddleware = validateBody(request.body);
+        await validateMiddleware(ctx, next);
+    }
+    if (request.param) {
+        const validateParamMiddleware = validateParam(request.param);
+        await validateParamMiddleware(ctx, next);
+    }
+    if (request.header) {
+        const validateHeaderMiddleware = validateHeader(request.header);
+        await validateHeaderMiddleware(ctx, next);
+    }
+    if (request.path) {
+        const validatePathMiddleware = validatePath(request.path);
+        await validatePathMiddleware(ctx, next);
+    }
+    
+    if (request.useWrappedUsecase) {
+        const usecaseWrapperMiddleware = usecaseWrapper(request.usecase);
+        await usecaseWrapperMiddleware(ctx, next);
+    } else {
+        await request.usecase(ctx);
+    }
+
+    if (request.response) {
+        const validateResponseMiddleware = validateResponse(request.response);
+        await validateResponseMiddleware(ctx, next);
+    }
+}
+
 export const usecaseWrapper = (execute: Function) => async(ctx: Context, next: any) => {
     interface RequestConfig {
         body?: any,
