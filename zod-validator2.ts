@@ -10,7 +10,7 @@ interface ValidateRequestConfig {
     header?: z.ZodSchema,
     path?: z.ZodSchema,
     usecase: Function,
-    useWrappedUsecase: boolean,
+    useWrappedUsecase?: boolean,
     response?: Array<{ status: number; schema: z.ZodSchema }>
 }
 function handleZodError(error: ZodError, response: Response) {
