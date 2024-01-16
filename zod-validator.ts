@@ -119,10 +119,10 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
 export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
         const params = Object.fromEntries(
-        //@ts-ignore: ctx has para
+            //@ts-ignore: ctx has param
             Object.entries(ctx.params).map(([key, value]) => {
-                if (typeof value === 'string' && !isNaN(value as any)) {
-                    return [key, parseInt(value)];
+                if (typeof value === 'string' && /^[0-9]+$/.test(value)) {
+                    return [key, parseInt(value, 10)];
                 }
                 return [key, value];
             })
