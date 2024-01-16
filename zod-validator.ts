@@ -99,8 +99,8 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         }
     }
 };  
-
-export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
+const pathSchema = z.string().transform(data => isNaN(Number(data)) ? data : Number(data));
+export const validatePath = (schema: z.ZodSchema<typeof pathSchema>) => async (ctx: Context, next: any) => {
     try {
         //@ts-ignore: ctx has params
         ctx.state.path = schema.parse(ctx.params);
