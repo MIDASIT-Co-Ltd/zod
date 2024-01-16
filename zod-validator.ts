@@ -99,11 +99,19 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         }
     }
 };  
-const pathSchema = z.string().transform(data => isNaN(Number(data)) ? data : Number(data));
-export const validatePath = (schema: z.ZodSchema<typeof pathSchema>) => async (ctx: Context, next: any) => {
+
+export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
-        //@ts-ignore: ctx has params
-        ctx.state.path = schema.parse(ctx.params);
+        const params = Object.fromEntries(
+        //@ts-ignore: ctx has para
+            Object.entries(ctx.params).map(([key, value]) => {
+                if (typeof value === 'string' && !isNaN(value as any)) {
+                    return [key, parseInt(value)];
+                }
+                return [key, value];
+            })
+        );
+        ctx.state.path = schema.parse(params);
     }
     catch (error) {        
         if (error instanceof z.ZodError) {
