@@ -1,8 +1,8 @@
-import { Context, HttpError, Response } from "oak/mod.ts";
+import { Context, Response } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
-import { createHttpError } from "std/http/http_errors.ts";
+import { createHttpError, HttpError } from "std/http/http_errors.ts";
 
 function handleZodError(error: ZodError, response: Response) {
     const newErrors = error.errors.map(err => ({
