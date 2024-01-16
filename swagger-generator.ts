@@ -59,13 +59,12 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         startIndex = text.search(routerStartRegex);
         endIndex = text.length;
         
-        console.log(text)
-        // const a = "./middleware/";
-        // const importRegex = new RegExp(`import\\s+{\\s*(.*?)\\s*}\\s+from\\s+"(${a.replace(/\./g, '\\.').replace(/\//g, '\\/')}(.*?)\\.ts)"`, 'g');
-        // const matches = importRegex.exec(text);
         
-        // if(matches != null)
-        // console.log(matches[1], matches[2]);
+        const a = "./middleware/";
+        const importRegex = new RegExp(`import\\s+{\\s*(.*?)\\s*}\\s+from\\s+"(${a.replace(/\./g, '\\.').replace(/\//g, '\\/')}(.*?)\\.ts)"`, 'g');
+
+        const matches = text.match(importRegex);
+        console.log(matches)
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
