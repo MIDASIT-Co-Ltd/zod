@@ -37,6 +37,10 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
+    const importRegex = /import\s+{\s*(.*?)\s*}\s+from\s+"\.\/middleware\/admin-middleware\.ts"/g;
+    const matches = [...text.matchAll(importRegex)];
+    console.log(matches)
+
     let startIndex = text.search(routerStartRegex);
     let endIndex = text.length;
 
