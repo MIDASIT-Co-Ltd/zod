@@ -29,7 +29,7 @@ export const middlewareChain = <R extends string, P extends RouteParams<R> = Rou
     ...middlewares: RouterMiddleware<R, P, S>[]
   ): RouterMiddleware<R, P, S> => {
     return async (ctx: RouterContext<R, P, S>, next: any) => {
-      const composedMiddleware = middlewares.reduce(
+      const composedMiddleware = middlewares.reduceRight(
         (nextMiddleware, currentMiddleware) => {
           return async () => {
             await currentMiddleware(ctx, nextMiddleware);
@@ -38,19 +38,6 @@ export const middlewareChain = <R extends string, P extends RouteParams<R> = Rou
         next
       );
       await composedMiddleware();
-    };
-};
-export const middlewareChain2 = (...middlewares: Middleware[]): Middleware => {
-    return async (ctx: Context, next: any) => {
-        const composedMiddleware = middlewares.reduce(
-            (nextMiddleware, currentMiddleware) => {
-                return async () => {
-                    await currentMiddleware(ctx, nextMiddleware);
-                };
-            },
-            next
-        );
-        await composedMiddleware();
     };
 };
 
