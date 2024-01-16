@@ -51,7 +51,6 @@ export const validateResponse = (resList: Array<{ status: number; schema: z.ZodS
         resList.forEach((res) =>{
             if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
         })
-        await next();
     } catch (error) {
         if (error instanceof z.ZodError) {
             const errors = error.errors.map(err => ({
@@ -66,6 +65,7 @@ export const validateResponse = (resList: Array<{ status: number; schema: z.ZodS
             throw createHttpError(error.status, error.message);
         }
     }
+    await next();
 };
 
 export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: any) => { 
@@ -73,7 +73,6 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
         const body = await ctx.request.body().value;
         ctx.state.request = {body : body}
         schema.parse(body);
-        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
@@ -82,6 +81,7 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
             throw createHttpError(error.status, error.message);
         }
     }
+    await next();
 };
 
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
@@ -89,7 +89,6 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         const params = Object.fromEntries(ctx.request.url.searchParams);
         ctx.state.request = {params : params}        
         ctx.state.param = schema.parse(params);
-        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
@@ -98,6 +97,7 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
             throw createHttpError(error.status, error.message);
         }
     }
+    await next();
 };  
 
 export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
@@ -128,7 +128,6 @@ export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next
             headersObj[key.toUpperCase()] = value;
         }
         ctx.state.header = uppercaseKeys(schema as z.ZodObject<ZodRawShape>).parse(headersObj)
-        await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
@@ -137,6 +136,7 @@ export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next
             throw createHttpError(error.status, error.message);
         }
     }
+    await next();
 }
 
 function uppercaseKeys<T extends ZodRawShape>(schema: z.ZodObject<T>): z.ZodObject<T> {
