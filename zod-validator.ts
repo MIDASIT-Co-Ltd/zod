@@ -1,4 +1,4 @@
-import { Context, Response, Middleware, RouterMiddleware } from "oak/mod.ts";
+import { Context, Response, RouterContext, Middleware, RouterMiddleware, RouteParams, State } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
@@ -25,21 +25,34 @@ function handleZodError(error: ZodError, response: Response) {
     response.body = { error: combinedErrors };
 }
 
-export const middlewareChain = (
-    ...middlewares: Array<Middleware | RouterMiddleware<string>>
-  ): Middleware => {
-    return async (ctx: Context, next: any) => {
+export const middlewareChain = <R extends string, P extends RouteParams<R> = RouteParams<R>, S extends State = Record<string, any>>(
+    ...middlewares: RouterMiddleware<R, P, S>[]
+  ): RouterMiddleware<R, P, S> => {
+    return async (ctx: RouterContext<R, P, S>, next: any) => {
       const composedMiddleware = middlewares.reduce(
         (nextMiddleware, currentMiddleware) => {
           return async () => {
-            await currentMiddleware(ctx as any, nextMiddleware);
+            await currentMiddleware(ctx, nextMiddleware);
           };
         },
         next
       );
       await composedMiddleware();
     };
-  };
+};
+export const middlewareChain2 = (...middlewares: Middleware[]): Middleware => {
+    return async (ctx: Context, next: any) => {
+        const composedMiddleware = middlewares.reduce(
+            (nextMiddleware, currentMiddleware) => {
+                return async () => {
+                    await currentMiddleware(ctx, nextMiddleware);
+                };
+            },
+            next
+        );
+        await composedMiddleware();
+    };
+};
 
 export const usecaseWrapper = (execute: Function) => async(ctx: Context, next: any) => {
     interface RequestConfig {
