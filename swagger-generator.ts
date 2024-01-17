@@ -9,7 +9,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
     const bearerAuth = registerComponent();
 
     for (const [router, mainPath] of routers) {
-        const [routerSection, middlewareSection] = extractRouterSection(code, router, routerPath);
+        const [routerSection, middlewareSection, middlewarePath] = extractRouterSection(code, router, routerPath);
         const httpMethods = extractHttpMethods(routerSection);
 
         for (const methodToken of httpMethods) {
@@ -18,7 +18,9 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
             if (middlewareSection) {
-                console.log(summary)
+                if(middlewareSection.includes(summary)) {
+                    httpMethods.push(...extractMiddlewareSection(summary, middlewarePath));
+                }
             }
             
             const tag = router;
@@ -38,12 +40,13 @@ function extractRouters(code: string): string[][] {
     return matches.map(match => [match[2], match[1]]);
 }
 
-function extractRouterSection(text: string, routerName: string, routerPath: string): [string, string] {
+function extractRouterSection(text: string, routerName: string, routerPath: string): [string, string, string] {
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
     let startIndex = text.search(routerStartRegex);
     let endIndex = text.length;
+    let newAbsolutePath;
 
     if (startIndex === -1) {
         const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
@@ -56,8 +59,8 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
         const directoryPath = path.dirname(absolutePath);
 
-        if (!matchImport) return ['', ''];
-        const newAbsolutePath = path.join(directoryPath, matchImport![2]);
+        if (!matchImport) return ['', '', ''];
+        newAbsolutePath = path.join(directoryPath, matchImport![2]);
 
         text = Deno.readTextFileSync(newAbsolutePath);
 
@@ -90,8 +93,12 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
             break;
         }
     }
+    
+    const regex = /from\s+'([^']+)'/;
+    const middlewareMatch = middlewares.reverse().toString().match(regex);
+    const middlewarePath = path.resolve(newAbsolutePath!, middlewareMatch![1])
 
-    return [text.substring(startIndex, endIndex), middlewares.reverse().toString()];
+    return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath];
 }
 
 function extractHttpMethods(str: string): string[] {
@@ -133,6 +140,20 @@ function extractHttpMethods(str: string): string[] {
         }
     }
     return tokens;
+}
+
+function extractMiddlewareSection(summary: string, middlewarePath: string): string[] {
+    const text = Deno.readTextFileSync(middlewarePath);
+
+    const lines = text.split('\n');
+    const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
+    const endIndex = lines.findIndex((line, index) => line.includes('});') && index > startIndex);
+
+    if (startIndex === -1 || endIndex === -1) {
+        return ["Function definition not found"];
+    }
+
+    return lines.slice(startIndex, endIndex + 1);
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
