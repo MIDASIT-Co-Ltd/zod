@@ -147,13 +147,27 @@ function extractHttpMethods(str: string): string[] {
 
 function extractMiddlewareSection(summary: string, middlewarePath: string): string[] {
     const text = Deno.readTextFileSync(middlewarePath);
-
     const lines = text.split('\n');
+    
     const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
-    const endIndex = lines.findIndex((line, index) => line.includes('});') && index > startIndex);
+    if (startIndex === -1) {
+        return [];
+    }
 
-    if (startIndex === -1 || endIndex === -1) {
-        return ["Function definition not found"];
+    let bracketDepth = 0;
+    let endIndex = startIndex;
+
+    while (endIndex < lines.length) {
+        const line = lines[endIndex];
+
+        bracketDepth += (line.match(/\(/g) || []).length;
+        bracketDepth -= (line.match(/\)/g) || []).length;
+
+        if (bracketDepth === 0 && endIndex > startIndex) {
+            break;
+        }
+
+        endIndex++;
     }
 
     return lines.slice(startIndex, endIndex + 1);
