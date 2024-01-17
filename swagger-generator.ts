@@ -19,7 +19,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
 
             if (middlewareSection) {
                 if(middlewareSection.includes(summary)) {
-                    httpMethods.push(...extractMiddlewareSection(summary, middlewarePath));
+                    middlewares.push(...extractMiddlewareSection(summary, middlewarePath));
                 }
             }
             
