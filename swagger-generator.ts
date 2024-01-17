@@ -282,7 +282,6 @@ function changeZodObject(values: Value[]) {
 async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares?: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
-    console.log(middlewares)
     for (const middleware of middlewares) {
         if (middleware.includes('validateParam')) {
             const match = middleware.match(/validateParam\(([^)]+)\)/);
