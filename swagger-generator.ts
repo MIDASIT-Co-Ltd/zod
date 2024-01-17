@@ -21,7 +21,6 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             let responses;
             if (middlewareSection.length != 0 && middlewareSection.includes(summary)) {
                 const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
-
                 
                 request = await createRequestConfig(newMiddleware, schemaUrl, customMiddlewares);
                 responses = await createResponseConfig(newMiddleware, schemaUrl);
@@ -179,7 +178,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     
     const result = splitTopLevelCommas(token);
-    
+    console.log(result.slice(1))
     return result.slice(1);
 }
 
