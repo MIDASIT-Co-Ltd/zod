@@ -176,9 +176,12 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     
-    const result = splitTopLevelCommas(token);
-    console.log(result.slice(1))
-    return result.slice(1);
+    const start = token.indexOf('middlewareChain(');
+    if (start === -1) return [];
+    const extractedContent = extractParenthesesContent(token.substring(start + 'middlewareChain('.length));
+
+    const result = splitTopLevelCommas(extractedContent);
+    return result;
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
