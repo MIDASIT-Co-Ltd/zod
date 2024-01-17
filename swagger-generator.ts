@@ -18,9 +18,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
             if (middlewareSection) {
-                if(middlewareSection.includes(summary)) {
-                    console.log(summary)
-                }
+                console.log(summary)
             }
             
             const tag = router;
