@@ -148,7 +148,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const text = Deno.readTextFileSync(middlewarePath);
     const lines = text.split('\n');
     
-    const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`))-1;
+    const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
     if (startIndex === -1) {
         return [];
     }
@@ -171,6 +171,8 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     const result = splitTopLevelCommas(extractParenthesesContent(token));
+
+    console.log(token)
 
     return result.slice(1);
 }
@@ -274,7 +276,6 @@ function changeZodObject(values: Value[]) {
 async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares?: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
-    console.log(middlewares)
     for (const middleware of middlewares) {
         if (middleware.includes('validateParam')) {
             const match = middleware.match(/validateParam\(([^)]+)\)/);
