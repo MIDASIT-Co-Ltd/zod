@@ -10,13 +10,19 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
 
     for (const [router, mainPath] of routers) {
         const [routerSection, middlewareSection] = extractRouterSection(code, router, routerPath);
-        console.log(middlewareSection)
         const httpMethods = extractHttpMethods(routerSection);
 
         for (const methodToken of httpMethods) {
             const method = extractMethod(methodToken);
             const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
             const summary = extractSummary(methodToken, middlewares, customMiddlewares);
+
+            if (middlewareSection) {
+                if(middlewareSection.includes(summary)) {
+                    console.log(summary)
+                }
+            }
+            
             const tag = router;
 
             const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
