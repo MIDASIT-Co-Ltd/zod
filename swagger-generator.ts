@@ -18,7 +18,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
             if(middlewareSection.length != 0 && middlewareSection.includes(summary)) {
-                middlewares.push(...extractMiddlewareSection(summary, middlewarePath));
+                middlewares.concat(extractMiddlewareSection(summary, middlewarePath));
             }
             
             const tag = router;
@@ -170,7 +170,10 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     }
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
-    const result = splitTopLevelCommas(token);
+    const start = token.indexOf('middlewareChain(');
+    if (start === -1) return [];
+    
+    const result = splitTopLevelCommas(extractParenthesesContent(token.substring(start + 'middlewareChain('.length)));
 
     console.log(result)
 
