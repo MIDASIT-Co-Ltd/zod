@@ -15,7 +15,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
         for (const methodToken of httpMethods) {
             const method = extractMethod(methodToken);
             const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
-            const summary = extractSummary(methodToken, middlewares, customMiddlewares);
+            const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
             if (middlewareSection) {
                 if(middlewareSection.includes(summary)) {
@@ -28,7 +28,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
             const responses = await createResponseConfig(middlewares, schemaUrl);
 
-            registerEndpoint(bearerAuth.name, method, path.replace(omittedPath, ''), summary, tag, request, responses);
+            registerEndpoint(bearerAuth.name, method, path.replace(omittedPath, ''), description ? description : summary, tag, request, responses);
         }
     }
 }
@@ -334,10 +334,9 @@ async function createResponseConfig(middlewares: string[], schemaUrl: string): P
     return responses;
 }
 
-function extractSummary(token: string, middlewares: string[], customMiddlewares?: customMiddleware[]): string {
+function extractSummary(token: string, middlewares: string[], customMiddlewares?: customMiddleware[]): [string, string] {
     const tokenMatch = token.match(/\/\/\s*@description\s*:\s*(.+)/);
     const description = tokenMatch ? tokenMatch[1].trim() : '';
-    if (description) return description;
     
     const definedMiddlewares = ["validateBody", "validateParam", "validateResponse", "validatePath", "validateHeader"];
     const combinedMiddlewares = customMiddlewares! ? [...customMiddlewares.map(customMiddleware => customMiddleware.name), ...definedMiddlewares] : definedMiddlewares;
@@ -347,7 +346,7 @@ function extractSummary(token: string, middlewares: string[], customMiddlewares?
         summary = summary.match(/usecaseWrapper\(\s*(\w+)/)![1]
     }
     
-    return summary;
+    return [description, summary];
 }
 
 async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema> {
