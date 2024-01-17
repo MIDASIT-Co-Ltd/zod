@@ -274,6 +274,7 @@ function changeZodObject(values: Value[]) {
 async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares?: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
+    console.log(middlewares)
     for (const middleware of middlewares) {
         if (middleware.includes('validateParam')) {
             const match = middleware.match(/validateParam\(([^)]+)\)/);
@@ -287,7 +288,6 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
         }
 
         if (middleware.includes('validateBody')) {
-            console.log(middleware)
             const match = middleware.match(/validateBody\(([^)]+)\)/);
 
             if (match && match[1]) {
