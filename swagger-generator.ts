@@ -173,7 +173,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     
     const result = splitTopLevelCommas(token);
 
-    console.log(result)
+    console.log(JSON.stringify(result))
 
     return result.slice(1);
 }
