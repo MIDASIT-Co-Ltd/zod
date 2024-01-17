@@ -17,10 +17,9 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
             const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
-            if (middlewareSection) {
-                if(middlewareSection.includes(summary)) {
-                    middlewares.push(...extractMiddlewareSection(summary, middlewarePath));
-                }
+            if(middlewareSection.length != 0 && middlewareSection.includes(summary)) {
+                middlewares.push(...extractMiddlewareSection(summary, middlewarePath));
+                console.log(middlewares)
             }
             
             const tag = router;
@@ -99,7 +98,6 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     if (middlewares.length != 0) {
         const regex = /from\s+["'`](.*?)["'`]/;
         const middlewareMatch = middlewares.reverse().toString().match(regex);
-        console.log(middlewares, middlewareMatch)
         middlewarePath = path.resolve(path.dirname(newAbsolutePath!), middlewareMatch![1])
     }
     
