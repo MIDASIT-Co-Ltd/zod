@@ -177,7 +177,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     console.log(result)
 
-    return result.slice(1);
+    return result;
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
