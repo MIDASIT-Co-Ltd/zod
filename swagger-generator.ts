@@ -60,18 +60,19 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         endIndex = text.length;
         
         
-        const lines = text.split('\n');
+        const lines = text.split('\n').reverse();
         const middlewareNames: string[] = [];
         let middlewareStart = false;
 
         for (const line of lines) {
-            if (line.includes('import {')) {
+            if (line.includes('./middleware/')) {
                 middlewareStart = true;
             }
             if (middlewareStart) {
                 middlewareNames.push(line.trim());
             }
-            if (line.includes('./middleware/')) {
+            if (line.includes('import {')) {
+                middlewareStart = false;
                 break;
             }
         }
