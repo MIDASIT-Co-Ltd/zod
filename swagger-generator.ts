@@ -170,9 +170,9 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     }
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
-    const result = splitTopLevelCommas(extractParenthesesContent(token));
+    const result = splitTopLevelCommas(token);
 
-    console.log(token)
+    console.log(result)
 
     return result.slice(1);
 }
