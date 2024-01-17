@@ -19,12 +19,11 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
 
             let request;
             let responses;
-            if (middlewareSection.length != 0 && middlewareSection.includes(summary)) {
+            if (middlewareSection.includes(summary)) {
                 const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
                 
                 request = await createRequestConfig(newMiddleware, schemaUrl, customMiddlewares);
                 responses = await createResponseConfig(newMiddleware, schemaUrl);
-
             } else {
                 request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
                 responses = await createResponseConfig(middlewares, schemaUrl);
