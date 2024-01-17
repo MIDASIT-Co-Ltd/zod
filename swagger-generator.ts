@@ -19,7 +19,6 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
 
             if(middlewareSection.length != 0 && middlewareSection.includes(summary)) {
                 middlewares.push(...extractMiddlewareSection(summary, middlewarePath));
-                console.log(middlewares)
             }
             
             const tag = router;
@@ -172,8 +171,8 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     const result = splitTopLevelCommas(extractParenthesesContent(token));
-    
-    return  result.slice(1);
+
+    return result.slice(1);
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
@@ -288,6 +287,7 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
         }
 
         if (middleware.includes('validateBody')) {
+            console.log(middleware)
             const match = middleware.match(/validateBody\(([^)]+)\)/);
 
             if (match && match[1]) {
