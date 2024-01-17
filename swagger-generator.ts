@@ -9,7 +9,8 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
     const bearerAuth = registerComponent();
 
     for (const [router, mainPath] of routers) {
-        const routerSection = extractRouterSection(code, router, routerPath);
+        const [routerSection, middlewareSection] = extractRouterSection(code, router, routerPath);
+        console.log(middlewareSection)
         const httpMethods = extractHttpMethods(routerSection);
 
         for (const methodToken of httpMethods) {
@@ -33,7 +34,7 @@ function extractRouters(code: string): string[][] {
     return matches.map(match => [match[2], match[1]]);
 }
 
-function extractRouterSection(text: string, routerName: string, routerPath: string): string {
+function extractRouterSection(text: string, routerName: string, routerPath: string): [string, string] {
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
@@ -51,33 +52,13 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
         const directoryPath = path.dirname(absolutePath);
 
-        if (!matchImport) return '';
+        if (!matchImport) return ['', ''];
         const newAbsolutePath = path.join(directoryPath, matchImport![2]);
 
         text = Deno.readTextFileSync(newAbsolutePath);
 
         startIndex = text.search(routerStartRegex);
         endIndex = text.length;
-        
-        
-        const lines = text.split('\n').reverse();
-        const middlewareNames: string[] = [];
-        let middlewareStart = false;
-
-        for (const line of lines) {
-            if (line.includes('./middleware/')) {
-                middlewareStart = true;
-            }
-            if (middlewareStart) {
-                middlewareNames.push(line.trim());
-            }
-            if (line.includes('import {')) {
-                middlewareStart = false;
-                break;
-            }
-        }
-
-        console.log(middlewareNames)
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
@@ -89,7 +70,24 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         }
     }
 
-    return text.substring(startIndex, endIndex);
+    const lines = text.split('\n').reverse();
+    const middlewares: string[] = [];
+    let middlewareStart = false;
+
+    for (const line of lines) {
+        if (line.includes('./middleware/')) {
+            middlewareStart = true;
+        }
+        if (middlewareStart) {
+            middlewares.push(line.trim());
+        }
+        if (line.includes('import {')) {
+            middlewareStart = false;
+            break;
+        }
+    }
+
+    return [text.substring(startIndex, endIndex), middlewares.reverse().toString()];
 }
 
 function extractHttpMethods(str: string): string[] {
