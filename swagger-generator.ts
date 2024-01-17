@@ -170,14 +170,12 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     }
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
-    const start = token.indexOf('middlewareChain(');
-    if (start === -1) return [];
     
-    const result = splitTopLevelCommas(extractParenthesesContent(token.substring(start + 'middlewareChain('.length)));
+    const result = splitTopLevelCommas(token);
 
     console.log(result)
 
-    return result;
+    return result.splice(1);
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
