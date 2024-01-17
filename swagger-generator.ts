@@ -176,9 +176,8 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     
-    const start = token.indexOf('middlewareChain(');
-    if (start === -1) return [];
-    const extractedContent = extractParenthesesContent(token.substring(start + 'middlewareChain('.length));
+    const start = token.indexOf('middlewareChain(') + 16;
+    const extractedContent = extractParenthesesContent(token.substring(start));
 
     const result = splitTopLevelCommas(extractedContent);
     return result;
