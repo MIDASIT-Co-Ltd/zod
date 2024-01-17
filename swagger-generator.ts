@@ -14,17 +14,24 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
 
         for (const methodToken of httpMethods) {
             const method = extractMethod(methodToken);
-            let [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
+            const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
             const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
-            if(middlewareSection.length != 0 && middlewareSection.includes(summary)) {
-                middlewares = middlewares.concat(extractMiddlewareSection(summary, middlewarePath));
+            let request;
+            let responses;
+            if (middlewareSection.length != 0 && middlewareSection.includes(summary)) {
+                const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
+
+                
+                request = await createRequestConfig(newMiddleware, schemaUrl, customMiddlewares);
+                responses = await createResponseConfig(newMiddleware, schemaUrl);
+
+            } else {
+                request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
+                responses = await createResponseConfig(middlewares, schemaUrl);
             }
             
             const tag = router;
-
-            const request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
-            const responses = await createResponseConfig(middlewares, schemaUrl);
 
             registerEndpoint(bearerAuth.name, method, path.replace(omittedPath, ''), description ? description : summary, tag, request, responses);
         }
