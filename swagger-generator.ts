@@ -148,7 +148,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const text = Deno.readTextFileSync(middlewarePath);
     const lines = text.split('\n');
     
-    const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
+    const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`))-1;
     if (startIndex === -1) {
         return [];
     }
