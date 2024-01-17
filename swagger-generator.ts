@@ -94,10 +94,14 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         }
     }
     
-    const regex = /from\s+'([^']+)'/;
-    const middlewareMatch = middlewares.reverse().toString().match(regex);
-    const middlewarePath = path.resolve(newAbsolutePath!, middlewareMatch![1])
+    let middlewarePath = '';
 
+    if (middlewares) {
+        const regex = /from\s+'([^']+)'/;
+        const middlewareMatch = middlewares.reverse().toString().match(regex);
+        middlewarePath = path.resolve(newAbsolutePath!, middlewareMatch![1])
+    }
+    
     return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath];
 }
 
