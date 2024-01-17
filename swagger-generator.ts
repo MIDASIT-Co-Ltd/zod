@@ -60,19 +60,23 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         endIndex = text.length;
         
         
-        const middlewareRegex = /import\s+{\s*(.*?)\s*}\s+from\s+"(\.\/middleware\/.*?\.ts)"/g;
+        const lines = text.split('\n');
+        const middlewareNames: string[] = [];
+        let middlewareStart = false;
 
-        let match;
-        let results = [];
-
-        while ((match = middlewareRegex.exec(text)) !== null) {
-            results.push({
-                functions: match[1].trim().split(/\s*,\s*/),
-                filePath: match[2]
-            });
+        for (const line of lines) {
+            if (line.includes('import {')) {
+                middlewareStart = true;
+            }
+            if (middlewareStart) {
+                middlewareNames.push(line.trim());
+            }
+            if (line.includes('./middleware/')) {
+                break;
+            }
         }
 
-        console.log(results);
+        console.log(middlewareNames)
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
