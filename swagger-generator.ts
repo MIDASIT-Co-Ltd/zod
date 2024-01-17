@@ -99,7 +99,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     if (middlewares.length != 0) {
         const regex = /from\s+'([^']+)'/;
         const middlewareMatch = middlewares.reverse().toString().match(regex);
-        console.log(middlewareMatch)
+        console.log(middlewares, middlewareMatch)
         middlewarePath = path.resolve(path.dirname(newAbsolutePath!), middlewareMatch![1])
     }
     
