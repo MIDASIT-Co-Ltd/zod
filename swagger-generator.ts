@@ -14,11 +14,11 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
 
         for (const methodToken of httpMethods) {
             const method = extractMethod(methodToken);
-            const [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
+            let [path, middlewares] = extractPathAndMiddlewares(methodToken, mainPath);
             const [description, summary] = extractSummary(methodToken, middlewares, customMiddlewares);
 
             if(middlewareSection.length != 0 && middlewareSection.includes(summary)) {
-                middlewares.concat(extractMiddlewareSection(summary, middlewarePath));
+                middlewares = middlewares.concat(extractMiddlewareSection(summary, middlewarePath));
             }
             
             const tag = router;
@@ -172,9 +172,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     
     const result = splitTopLevelCommas(token);
-
-    console.log(JSON.stringify(result))
-
+    
     return result.slice(1);
 }
 
@@ -277,6 +275,7 @@ function changeZodObject(values: Value[]) {
 async function createRequestConfig(middlewares: string[], schemaUrl: string, customMiddlewares?: customMiddleware[]): Promise<RequestConfig> {
     const request: RequestConfig = {};
 
+    console.log(middlewares)
     for (const middleware of middlewares) {
         if (middleware.includes('validateParam')) {
             const match = middleware.match(/validateParam\(([^)]+)\)/);
