@@ -63,30 +63,24 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
 }
 
 export const validateResponse = (resList: Array<{ status: number; schema: z.ZodSchema }>) => async (ctx: Context, next: any) => {
-    
         resList.forEach((res) =>{
             if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
         })
         await next();
-    
 };
 
 export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: any) => { 
-    
         const body = await ctx.request.body().value;
         ctx.state.request = {body : body}
         schema.parse(body);
         await next();
-    
 };
 
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
-    
-        const params = Object.fromEntries(ctx.request.url.searchParams);
-        ctx.state.request = {params : params}        
-        ctx.state.param = schema.parse(params);
-        await next();
-    
+    const params = Object.fromEntries(ctx.request.url.searchParams);
+    ctx.state.request = {params : params}        
+    ctx.state.param = schema.parse(params);
+    await next();    
 };  
 
 export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
@@ -107,21 +101,12 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
 }
 
 export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
-    try {
-        const headersObj: { [key: string]: string } = {};
-        for (const [key, value] of ctx.request.headers) {
-            headersObj[key.toUpperCase()] = value;
-        }
-        ctx.state.header = uppercaseKeys(schema as z.ZodObject<ZodRawShape>).parse(headersObj)
-        await next();
-    } catch (error) {        
-        if (error instanceof z.ZodError) {
-            handleZodError(error, ctx.response);
-        } 
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
+    const headersObj: { [key: string]: string } = {};
+    for (const [key, value] of ctx.request.headers) {
+        headersObj[key.toUpperCase()] = value;
     }
+    ctx.state.header = uppercaseKeys(schema as z.ZodObject<ZodRawShape>).parse(headersObj)
+    await next();
 }
 
 function uppercaseKeys<T extends ZodRawShape>(schema: z.ZodObject<T>): z.ZodObject<T> {
