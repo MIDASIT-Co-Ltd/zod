@@ -3,7 +3,7 @@ import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
 export const generateRegister = async(baseUrl: string, routerPath: string, schemaUrl: string, customMiddlewares?: customMiddleware[]) => {
-    const code = await Deno.readTextFile(routerPath);
+    const code = Deno.readTextFileSync(routerPath);
     const routers = extractRouters(code);
 
     const bearerAuth = registerComponent();

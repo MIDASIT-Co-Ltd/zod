@@ -14,8 +14,8 @@ export interface customMiddleware {
 export async function initSwagger(serverUrl: string, baseUrl: string, mainRouterFilePath: string, 
     schemaFolderPath: string, writeOpenAPISpecPath: string, customMiddlewares?: customMiddleware[]) {    
     
-        if (schemaFolderPath.startsWith('.')) {
-            schemaFolderPath = schemaFolderPath.substring(1);
+    if (schemaFolderPath.startsWith('.')) {
+        schemaFolderPath = schemaFolderPath.substring(1);
     }
     
     await generateRegister(baseUrl, mainRouterFilePath, schemaFolderPath, customMiddlewares);
