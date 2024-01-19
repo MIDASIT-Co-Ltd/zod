@@ -22,11 +22,11 @@ export async function initSwagger(serverUrl: string, baseUrl: string, mainRouter
     writeDocumentation(writeOpenAPISpecPath, serverUrl+baseUrl);
 }
 
-export function transplantSwagger(omittedPath: string, writePath: string, router: Router) {
+export function transplantSwagger(baseUrl: string, writeOpenAPISpecPath: string, router: Router) {
     router
     .get(
-        omittedPath + '/swagger', (ctx) => {
-          const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writePath + '/openapi-docs.yml')))
+        baseUrl + '/swagger', (ctx) => {
+          const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writeOpenAPISpecPath + '/openapi-docs.yml')))
           const ui = `<!DOCTYPE html>
           <html lang="en">
           <head>
@@ -68,8 +68,8 @@ export function transplantSwagger(omittedPath: string, writePath: string, router
           `
         ctx.response.body = ui
     })
-    .get(omittedPath + '/openapi', (ctx) => {
-        const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writePath + '/openapi-docs.yml')))
+    .get(baseUrl + '/openapi', (ctx) => {
+        const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writeOpenAPISpecPath + '/openapi-docs.yml')))
         ctx.response.body = apiSpec
     })
     

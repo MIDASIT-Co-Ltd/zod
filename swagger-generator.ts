@@ -19,6 +19,7 @@ export const generateRegister = async(baseUrl: string, routerPath: string, schem
 
             let request;
             let responses;
+            console.log(middlewareSection, summary)
             if (middlewareSection.includes(summary)) {
                 const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
                 
