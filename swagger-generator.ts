@@ -91,10 +91,10 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         }
         if (middlewareStart) {
             middlewares.push(line.trim());   
-        }
-        if (line.includes('import {')) {
-            middlewareStart = false;
-            break;
+            if (line.includes('import {')) {
+                middlewareStart = false;
+                break;
+            }
         }
     }
     
