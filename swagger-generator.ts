@@ -90,12 +90,11 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
             middlewareStart = true;
         }
         if (middlewareStart) {
-            middlewares.push(line.trim());
-
-            if (line.includes('import {')) {
-                middlewareStart = false;
-                break;
-            }
+            middlewares.push(line.trim());   
+        }
+        if (line.includes('import {')) {
+            middlewareStart = false;
+            break;
         }
     }
     
@@ -159,7 +158,7 @@ function checkMiddlewareCorrect(middleware: string, summary: string): boolean {
     const matchSummary = (summary ? summary : '').match(regex2);
 
 
-    console.log(matchMiddleware, matchSummary)
+    console.log(matchMiddleware)
 
     if (matchMiddleware && matchSummary) {
         return matchMiddleware[1] == matchSummary[1];
