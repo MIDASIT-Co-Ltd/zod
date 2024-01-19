@@ -170,9 +170,15 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const text = Deno.readTextFileSync(middlewarePath);
     const lines = text.split('\n');
     
-    const startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
+    let startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
     if (startIndex === -1) {
-        return [];
+        const regex = /\.(\w+)/;
+        const match = summary.match(regex);
+        if (match) {
+            startIndex = lines.findIndex(line => line.includes(`export const ${match[1]} =`));
+        } else {
+            return [];   
+        }
     }
 
     let bracketDepth = 0;
