@@ -2,7 +2,7 @@ import { z, registerEndpoint, registerComponent } from "./swagger-utils.ts";
 import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
-export const generateRegister = async(omittedPath: string, routerPath: string, schemaUrl: string, customMiddlewares?: customMiddleware[]) => {
+export const generateRegister = async(baseUrl: string, routerPath: string, schemaUrl: string, customMiddlewares?: customMiddleware[]) => {
     const code = await Deno.readTextFile(routerPath);
     const routers = extractRouters(code);
 
@@ -31,7 +31,7 @@ export const generateRegister = async(omittedPath: string, routerPath: string, s
             
             const tag = router;
 
-            registerEndpoint(bearerAuth.name, method, path.replace(omittedPath, ''), description ? description : summary, tag, request, responses);
+            registerEndpoint(bearerAuth.name, method, path.replace(baseUrl, ''), description ? description : summary, tag, request, responses);
         }
     }
 }

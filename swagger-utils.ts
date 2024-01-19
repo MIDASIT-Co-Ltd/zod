@@ -5,6 +5,7 @@ import {
 } from 'zodOpenapi';
 import * as yaml from 'yaml/es2022/yaml.mjs';
 import { z } from 'zod';
+import { ensureDirSync } from 'std/fs/mod.ts';
 
 extendZodWithOpenApi(z);
 
@@ -44,7 +45,7 @@ export function writeDocumentation(writePath: string, serverUrl: string) {
     const textEncorder = new TextEncoder();
     const Contents = textEncorder.encode(fileContent);
     
-    Deno.mkdir(writePath, { recursive: true });
+    ensureDirSync(writePath);
     Deno.writeFileSync(`${writePath}/openapi-docs.yml`, Contents);
 }
 

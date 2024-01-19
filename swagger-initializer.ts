@@ -11,21 +11,21 @@ export interface customMiddleware {
     body?: Array<{ [key: string]: string }>;
 }
 
-export async function initSwagger(serverUrl: string, omittedPath: string, routerPath: string, 
-    schemaPath: string, writePath: string, customMiddlewares?: customMiddleware[]) {    
+export async function initSwagger(serverUrl: string, baseUrl: string, mainRouterFilePath: string, 
+    schemaFolderPath: string, writeOpenAPISpecPath: string, customMiddlewares?: customMiddleware[]) {    
     
-        if (schemaPath.startsWith('.')) {
-        schemaPath = schemaPath.substring(1);
+        if (schemaFolderPath.startsWith('.')) {
+            schemaFolderPath = schemaFolderPath.substring(1);
     }
     
-    await generateRegister(omittedPath, routerPath, schemaPath, customMiddlewares);
-    writeDocumentation(writePath, serverUrl+omittedPath);
+    await generateRegister(baseUrl, mainRouterFilePath, schemaFolderPath, customMiddlewares);
+    writeDocumentation(writeOpenAPISpecPath, serverUrl+baseUrl);
 }
 
 export function transplantSwagger(omittedPath: string, writePath: string, router: Router) {
-    router.get(
-        omittedPath + '/swagger', 
-        (ctx) => {
+    router
+    .get(
+        omittedPath + '/swagger', (ctx) => {
           const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writePath + '/openapi-docs.yml')))
           const ui = `<!DOCTYPE html>
           <html lang="en">
@@ -66,5 +66,11 @@ export function transplantSwagger(omittedPath: string, writePath: string, router
           </body>
           </html>
           `
-          ctx.response.body = ui})
+        ctx.response.body = ui
+    })
+    .get('/openapi', (ctx) => {
+        const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writePath + '/openapi-docs.yml')))
+        ctx.response.body = apiSpec
+    })
+    
 }

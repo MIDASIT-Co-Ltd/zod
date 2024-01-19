@@ -1,4 +1,4 @@
-import { Context, Response, RouterContext, Middleware, RouterMiddleware, RouteParams, State } from "oak/mod.ts";
+import { Context, Response, RouterContext, RouterMiddleware, RouteParams, State } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
@@ -41,7 +41,7 @@ export const middlewareChain = <R extends string, P extends RouteParams<R> = Rou
     };
 };
 
-export const usecaseWrapper = (execute: Function) => async(ctx: Context, next: any) => {
+export const middlewareWrapper = (execute: Function) => async(ctx: Context, next: any) => {
     interface RequestConfig {
         body?: any,
         param?: any,
