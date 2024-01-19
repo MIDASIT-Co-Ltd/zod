@@ -63,77 +63,34 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
 }
 
 export const validateResponse = (resList: Array<{ status: number; schema: z.ZodSchema }>) => async (ctx: Context, next: any) => {
-    try {
+    
         resList.forEach((res) =>{
             if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
         })
         await next();
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            const errors = error.errors.map(err => ({
-                message: err.message,
-                path: err.path.join('.'),
-                code: err.code
-            }));        
-            ctx.response.status = 400;
-            ctx.response.body = {error: errors, response: ctx.response.body};
-        } 
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
-        else {
-            console.log(error.status, error.message)
-            console.log(error)
-            console.log(JSON.stringify(error))
-            console.log(typeof(error))
-        }
-    }
+    
 };
 
 export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: any) => { 
-    try {
+    
         const body = await ctx.request.body().value;
         ctx.state.request = {body : body}
         schema.parse(body);
         await next();
-    } catch (error) {        
-        if (error instanceof z.ZodError) {
-            handleZodError(error, ctx.response);
-        }
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
-        else {
-            console.log(error.status, error.message)
-            console.log(error)
-            console.log(JSON.stringify(error))
-            console.log(typeof(error))        }
-    }
+    
 };
 
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
-    try {
+    
         const params = Object.fromEntries(ctx.request.url.searchParams);
         ctx.state.request = {params : params}        
         ctx.state.param = schema.parse(params);
         await next();
-    } catch (error) {        
-        if (error instanceof z.ZodError) {
-            handleZodError(error, ctx.response);
-        }
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
-        else {
-            console.log(error.status, error.message)
-            console.log(error)
-            console.log(JSON.stringify(error))
-            console.log(typeof(error))        }
-    }
+    
 };  
 
 export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
-    try {
+   
         const params = Object.fromEntries(
             //@ts-ignore: ctx has param
             Object.entries(ctx.params).map(([key, value]) => {
@@ -145,20 +102,8 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
         );
         ctx.state.path = schema.parse(params);
         await next();
-    }
-    catch (error) {        
-        if (error instanceof z.ZodError) {
-            handleZodError(error, ctx.response);
-        }
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
-        else {
-            console.log(error.status, error.message)
-            console.log(error)
-            console.log(JSON.stringify(error))
-            console.log(typeof(error))        }
-    }
+    
+    
 }
 
 export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
