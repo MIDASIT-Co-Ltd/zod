@@ -157,6 +157,9 @@ function checkMiddlewareCorrect(middleware: string, summary: string): boolean {
     const regex2 = /(\w+)(?=\.\w+)/;
     const matchSummary = summary.match(regex2);
 
+
+    console.log(matchMiddleware, matchSummary)
+
     if (matchMiddleware && matchSummary) {
         return matchMiddleware[1] == matchSummary[1];
     }
