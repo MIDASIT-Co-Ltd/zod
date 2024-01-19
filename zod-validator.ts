@@ -113,6 +113,9 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
         }
+        else (
+            console.log(error.status, error.message)
+        )
     }
 };  
 
