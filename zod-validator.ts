@@ -83,6 +83,9 @@ export const validateResponse = (resList: Array<{ status: number; schema: z.ZodS
         }
         else {
             console.log(error.status, error.message)
+            console.log(error)
+            console.log(JSON.stringify(error))
+            console.log(typeof(error))
         }
     }
 };
@@ -102,7 +105,9 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
         }
         else {
             console.log(error.status, error.message)
-        }
+            console.log(error)
+            console.log(JSON.stringify(error))
+            console.log(typeof(error))        }
     }
 };
 
@@ -121,7 +126,9 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         }
         else {
             console.log(error.status, error.message)
-        }
+            console.log(error)
+            console.log(JSON.stringify(error))
+            console.log(typeof(error))        }
     }
 };  
 
@@ -148,7 +155,9 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
         }
         else {
             console.log(error.status, error.message)
-        }
+            console.log(error)
+            console.log(JSON.stringify(error))
+            console.log(typeof(error))        }
     }
 }
 
