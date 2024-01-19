@@ -153,10 +153,10 @@ function extractHttpMethods(str: string): string[] {
 
 function checkMiddlewareCorrect(middleware: string, summary: string): boolean {
     const regex = /import \* as (\w+)/;
-    const matchMiddleware = middleware.match(regex);
+    const matchMiddleware = (middleware ? middleware : '').match(regex);
 
     const regex2 = /(\w+)(?=\.\w+)/;
-    const matchSummary = summary.match(regex2);
+    const matchSummary = (summary ? summary : '').match(regex2);
 
 
     console.log(matchMiddleware, matchSummary)
