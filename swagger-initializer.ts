@@ -68,7 +68,7 @@ export function transplantSwagger(omittedPath: string, writePath: string, router
           `
         ctx.response.body = ui
     })
-    .get('/openapi', (ctx) => {
+    .get(omittedPath + '/openapi', (ctx) => {
         const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writePath + '/openapi-docs.yml')))
         ctx.response.body = apiSpec
     })
