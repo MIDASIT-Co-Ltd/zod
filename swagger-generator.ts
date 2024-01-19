@@ -19,7 +19,6 @@ export const generateRegister = async(baseUrl: string, routerPath: string, schem
 
             let request;
             let responses;
-            console.log(middlewareSection)
             if (middlewareSection.includes(summary) || checkMiddlewareCorrect(middlewareSection, summary)) {
                 const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
                 
@@ -156,9 +155,6 @@ function checkMiddlewareCorrect(middleware: string, summary: string): boolean {
 
     const regex2 = /(\w+)(?=\.\w+)/;
     const matchSummary = (summary ? summary : '').match(regex2);
-
-
-    console.log(matchMiddleware)
 
     if (matchMiddleware && matchSummary) {
         return matchMiddleware[1] == matchSummary[1];
