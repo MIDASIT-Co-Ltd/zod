@@ -19,8 +19,7 @@ export const generateRegister = async(baseUrl: string, routerPath: string, schem
 
             let request;
             let responses;
-            console.log(middlewareSection, summary)
-            if (middlewareSection.includes(summary)) {
+            if (middlewareSection.includes(summary) || checkMiddlewareCorrect(middlewares[0], summary)) {
                 const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
                 
                 request = await createRequestConfig(newMiddleware, schemaUrl, customMiddlewares);
@@ -91,10 +90,11 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         }
         if (middlewareStart) {
             middlewares.push(line.trim());
-        }
-        if (line.includes('import {')) {
-            middlewareStart = false;
-            break;
+
+            if (line.includes('import {')) {
+                middlewareStart = false;
+                break;
+            }
         }
     }
     
@@ -148,6 +148,19 @@ function extractHttpMethods(str: string): string[] {
         }
     }
     return tokens;
+}
+
+function checkMiddlewareCorrect(middleware: string, summary: string): boolean {
+    const regex = /import \* as (\w+)/;
+    const matchMiddleware = middleware.match(regex);
+
+    const regex2 = /(\w+)(?=\.\w+)/;
+    const matchSummary = summary.match(regex2);
+
+    if (matchMiddleware && matchSummary) {
+        return matchMiddleware[1] == matchSummary[1];
+    }
+    return false;
 }
 
 function extractMiddlewareSection(summary: string, middlewarePath: string): string[] {
