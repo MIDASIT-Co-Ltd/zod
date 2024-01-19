@@ -86,12 +86,12 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     let middlewareStart = false;
 
     for (const line of lines) {
-        if (line.includes('./middleware/')) {
+        if (line.includes('/middleware/')) {
             middlewareStart = true;
         }
         if (middlewareStart) {
             middlewares.push(line.trim());   
-            if (line.includes('import {')) {
+            if (line.includes('import')) {
                 middlewareStart = false;
                 break;
             }
