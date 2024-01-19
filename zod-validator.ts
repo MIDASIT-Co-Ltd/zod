@@ -81,6 +81,9 @@ export const validateResponse = (resList: Array<{ status: number; schema: z.ZodS
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
         }
+        else {
+            console.log(error.status, error.message)
+        }
     }
 };
 
@@ -96,6 +99,9 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
         }
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
+        }
+        else {
+            console.log(error.status, error.message)
         }
     }
 };
@@ -113,9 +119,9 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
         }
-        else (
+        else {
             console.log(error.status, error.message)
-        )
+        }
     }
 };  
 
@@ -131,6 +137,7 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
             })
         );
         ctx.state.path = schema.parse(params);
+        await next();
     }
     catch (error) {        
         if (error instanceof z.ZodError) {
@@ -139,8 +146,10 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
         else if (error instanceof HttpError) {
             throw createHttpError(error.status, error.message);
         }
+        else {
+            console.log(error.status, error.message)
+        }
     }
-    await next();
 }
 
 export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
