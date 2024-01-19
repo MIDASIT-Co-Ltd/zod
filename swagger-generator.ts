@@ -19,8 +19,8 @@ export const generateRegister = async(baseUrl: string, routerPath: string, schem
 
             let request;
             let responses;
-            console.log(middlewares)
-            if (middlewareSection.includes(summary) || checkMiddlewareCorrect(middlewares[0], summary)) {
+            console.log(middlewareSection)
+            if (middlewareSection.includes(summary) || checkMiddlewareCorrect(middlewareSection[0], summary)) {
                 const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
                 
                 request = await createRequestConfig(newMiddleware, schemaUrl, customMiddlewares);
