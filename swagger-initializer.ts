@@ -68,11 +68,11 @@ export function transplantSwagger(baseUrl: string, writeOpenAPISpecPath: string,
           </html>
           `
         ctx.response.body = ui
-        console.log(`SwaggerUI successfully integrated at '${baseUrl}/swagger'.`);
     })
     .get(baseUrl + '/openapi', (ctx) => {
         const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writeOpenAPISpecPath + '/openapi-docs.yml')))
         ctx.response.body = apiSpec
-        console.log(`OpenApiDocs successfully integrated at '${baseUrl}/openapi'.`);
     })
+    console.log(`SwaggerUI successfully integrated at '${baseUrl}/swagger'.`);
+    console.log(`OpenApiDocs successfully integrated at '${baseUrl}/openapi'.`);
 }
