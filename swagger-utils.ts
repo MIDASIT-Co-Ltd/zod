@@ -39,6 +39,7 @@ function getOpenApiDocumentation(serverUrl: string) {
 }
 
 export function writeDocumentation(writePath: string, serverUrl: string) {
+    console.log(Deno.cwd());
     const docs = getOpenApiDocumentation(serverUrl);
     const fileContent = yaml.stringify(docs);
 
