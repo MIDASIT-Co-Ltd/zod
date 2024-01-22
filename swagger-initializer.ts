@@ -20,6 +20,7 @@ export async function initSwagger(serverUrl: string, baseUrl: string, mainRouter
     
     await generateRegister(baseUrl, mainRouterFilePath, schemaFolderPath, customMiddlewares);
     writeDocumentation(writeOpenAPISpecPath, serverUrl+baseUrl);
+    console.log(`OpenAPI Docs generated successfully`)
 }
 
 export function transplantSwagger(baseUrl: string, writeOpenAPISpecPath: string, router: Router) {
@@ -67,10 +68,11 @@ export function transplantSwagger(baseUrl: string, writeOpenAPISpecPath: string,
           </html>
           `
         ctx.response.body = ui
+        console.log(`SwaggerUI successfully integrated at '${baseUrl}/swagger'.`);
     })
     .get(baseUrl + '/openapi', (ctx) => {
         const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(writeOpenAPISpecPath + '/openapi-docs.yml')))
         ctx.response.body = apiSpec
+        console.log(`OpenApiDocs successfully integrated at '${baseUrl}/openapi'.`);
     })
-    
 }
