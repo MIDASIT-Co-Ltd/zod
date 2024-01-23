@@ -2,7 +2,6 @@ import { Context, Response, RouterContext, RouterMiddleware, RouteParams, State 
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
-import { createHttpError, HttpError } from "std/http/http_errors.ts";
 
 function handleZodError(error: ZodError, response: Response) {
     const newErrors = error.errors.map(err => ({
@@ -47,14 +46,20 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         param?: any,
         header?: any,
         path?: any,
+        state?: any,
         [key: string]: any;
     }
 
+    let requestBody;
+    if (['POST', 'PUT', 'PATCH'].includes(ctx.request.method)) {
+        requestBody = await ctx.request.body().value;
+    }
     const request: RequestConfig = {
-        body: await ctx.request.body().value || undefined,
+        body: requestBody || undefined,
         param: ctx.state.param || undefined,
         header: ctx.state.header || undefined,
-        path: ctx.state.path || undefined
+        path: ctx.state.path || undefined,
+        state: ctx.state
     };
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
@@ -77,9 +82,6 @@ export const validateResponse = (resList: Array<{ status: number; schema: z.ZodS
             }));        
             ctx.response.status = 400;
             ctx.response.body = {error: errors, response: ctx.response.body};
-        } 
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
         }
         else {
             throw error;
@@ -97,9 +99,6 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
         }
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
         else {
             throw error;
         }
@@ -115,9 +114,6 @@ export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next:
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        }
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
         }
         else {
             throw error;
@@ -143,9 +139,6 @@ export const validatePath = (schema: z.ZodSchema) => async (ctx: Context, next: 
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
         }
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
-        }
         else {
             throw error;
         }
@@ -163,9 +156,6 @@ export const validateHeader = (schema: z.ZodSchema) => async (ctx: Context, next
     } catch (error) {        
         if (error instanceof z.ZodError) {
             handleZodError(error, ctx.response);
-        } 
-        else if (error instanceof HttpError) {
-            throw createHttpError(error.status, error.message);
         }
         else {
             throw error;
