@@ -50,8 +50,12 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         [key: string]: any;
     }
 
+    let requestBody;
+    if (['POST', 'PUT', 'PATCH'].includes(ctx.request.method)) {
+        requestBody = await ctx.request.body().value;
+    }
     const request: RequestConfig = {
-        body: await ctx.request.body().value || undefined,
+        body: requestBody.value || undefined,
         param: ctx.state.param || undefined,
         header: ctx.state.header || undefined,
         path: ctx.state.path || undefined,
