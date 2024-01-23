@@ -55,7 +55,7 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         requestBody = await ctx.request.body().value;
     }
     const request: RequestConfig = {
-        body: requestBody.value || undefined,
+        body: requestBody || undefined,
         param: ctx.state.param || undefined,
         header: ctx.state.header || undefined,
         path: ctx.state.path || undefined,
