@@ -182,6 +182,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     while (endIndex < lines.length) {
         const line = lines[endIndex];
+        if (line!) break;
 
         bracketDepth += (line.match(/\(/g) || []).length;
         bracketDepth -= (line.match(/\)/g) || []).length;
