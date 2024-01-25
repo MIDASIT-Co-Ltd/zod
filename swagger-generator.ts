@@ -168,7 +168,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     
     let startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
     if (startIndex === -1) {
-        const regex = /\.(\w+)/;
+        const regex = /([^\.]+)$/;
         const match = summary.match(regex);
         if (match) {
             startIndex = lines.findIndex(line => line.includes(`export const ${match[1]} =`));
