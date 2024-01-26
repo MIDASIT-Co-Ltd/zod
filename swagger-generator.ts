@@ -168,7 +168,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     
     let startIndex = lines.findIndex(line => line.includes(`export const ${summary} =`));
     if (startIndex === -1) {
-        const regex = /\.(\w+)/;
+        const regex = /([^\.]+)$/;
         const match = summary.match(regex);
         if (match) {
             startIndex = lines.findIndex(line => line.includes(`export const ${match[1]} =`));
@@ -182,9 +182,10 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     while (endIndex < lines.length) {
         const line = lines[endIndex];
+        if (line.includes('] as const')) break;
 
-        bracketDepth += (line.match(/\(/g) || []).length;
-        bracketDepth -= (line.match(/\)/g) || []).length;
+        bracketDepth += (line.match(/\[/g) || []).length;
+        bracketDepth -= (line.match(/\]/g) || []).length;
 
         if (bracketDepth === 0 && endIndex > startIndex) {
             break;
@@ -195,8 +196,8 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
 
     const token = lines.slice(startIndex, endIndex + 1).join('\n');
     
-    const start = token.indexOf('middlewareChain(');
-    const extractedContent = extractParenthesesContent(token.substring(start));
+    const start = token.indexOf('[');
+    const extractedContent = extractBracketContent(token.substring(start));
 
     const result = splitTopLevelCommas(extractedContent);
     return result;
@@ -206,6 +207,25 @@ type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' |
 function extractMethod(token: string): Method {
     const methodMatch = token.match(/\.(get|post|put|delete|patch|head|options|trace)\(/);
     return methodMatch![1] as Method;
+}
+
+function extractBracketContent(str: string): string {
+    const stack = [];
+    let content = '';
+
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] === '[') {
+            stack.push('[');
+        } else if (str[i] === ']' && stack.length) {
+            stack.pop();
+            if (stack.length === 0) {
+                content = str.substring(1, i);
+                break;
+            }
+        }
+    }
+
+    return content;
 }
 
 function extractPathAndMiddlewares(token: string, mainPath: string): [string, string[]] {
