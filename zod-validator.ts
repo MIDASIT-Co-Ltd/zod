@@ -24,6 +24,25 @@ function handleZodError(error: ZodError, response: Response) {
     response.body = { error: combinedErrors };
 }
 
+/**
+ * @deprecated The method should not be used
+ */
+export const middlewareChain = <R extends string, P extends RouteParams<R> = RouteParams<R>, S extends State = Record<string, any>>(
+    ...middlewares: RouterMiddleware<R, P, S>[]
+  ): RouterMiddleware<R, P, S> => {
+    return async (ctx: RouterContext<R, P, S>, next: any) => {
+      const composedMiddleware = middlewares.reduceRight(
+        (nextMiddleware, currentMiddleware) => {
+          return async () => {
+            await currentMiddleware(ctx, nextMiddleware);
+          };
+        },
+        next
+      );
+      await composedMiddleware();
+    };
+};
+
 export const middlewareWrapper = (execute: Function) => async(ctx: Context, next: any) => {
     interface RequestConfig {
         body?: any,
