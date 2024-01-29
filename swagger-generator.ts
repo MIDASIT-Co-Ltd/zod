@@ -453,7 +453,7 @@ function extractSummary(token: string, middlewares: string[], customMiddlewares?
 
 async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema> {
     try {
-        const module = await import('file://' + Deno.cwd() + schemaUrl + `/${moduleName}.ts`);
+        const module = await import('file://' + schemaUrl);
         return module[schemaName];
        
     } catch (error) {
