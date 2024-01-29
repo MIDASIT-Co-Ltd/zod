@@ -85,7 +85,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     let middlewareStart = false;
 
     for (const line of lines) {
-        if (line.includes('/middleware/')) {
+        if (line.includes('middleware.ts')) {
             middlewareStart = true;
         }
         if (middlewareStart) {
