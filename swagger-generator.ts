@@ -113,6 +113,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         console.log(schemaMatch)
     }
 
+    return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath]
 }
 
 function extractHttpMethods(str: string): string[] {
