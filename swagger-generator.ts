@@ -208,6 +208,16 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const extractedContent = extractBracketContent(token.substring(start));
 
     const result = splitTopLevelCommas(extractedContent);
+
+    let schemaPath = '';
+    const schemaRegex = /\.\/.*-schema\.ts/g;
+    let schemaMatch = text.match(schemaRegex)
+    
+    if (schemaMatch) {
+        console.log(schemaMatch)
+    }
+
+
     return result;
 }
 
