@@ -2,14 +2,14 @@ import { z, registerEndpoint, registerComponent } from "./swagger-utils.ts";
 import * as path from "std/path/mod.ts";
 import {customMiddleware} from "./swagger-initializer.ts"
 
-export const generateRegister = async(baseUrl: string, routerPath: string, schemaUrl: string, customMiddlewares?: customMiddleware[]) => {
+export const generateRegister = async(baseUrl: string, routerPath: string, customMiddlewares?: customMiddleware[]) => {
     const code = Deno.readTextFileSync(routerPath);
     const routers = extractRouters(code);
 
     const bearerAuth = registerComponent();
 
     for (const [router, mainPath] of routers) {
-        const [routerSection, middlewareSection, middlewarePath] = extractRouterSection(code, router, routerPath);
+        const [routerSection, middlewareSection, middlewarePath, schemaPath] = extractRouterSection(code, router, routerPath);
         const httpMethods = extractHttpMethods(routerSection);
 
         for (const methodToken of httpMethods) {
@@ -20,13 +20,13 @@ export const generateRegister = async(baseUrl: string, routerPath: string, schem
             let request;
             let responses;
             if (middlewareSection.includes(summary) || checkMiddlewareCorrect(middlewareSection, summary)) {
-                const newMiddleware = extractMiddlewareSection(summary, middlewarePath)
+                const [newMiddleware, schemaPath] = extractMiddlewareSection(summary, middlewarePath)
                 
-                request = await createRequestConfig(newMiddleware, schemaUrl, customMiddlewares);
-                responses = await createResponseConfig(newMiddleware, schemaUrl);
+                request = await createRequestConfig(newMiddleware, schemaPath, customMiddlewares);
+                responses = await createResponseConfig(newMiddleware, schemaPath);
             } else {
-                request = await createRequestConfig(middlewares, schemaUrl, customMiddlewares);
-                responses = await createResponseConfig(middlewares, schemaUrl);
+                request = await createRequestConfig(middlewares, schemaPath, customMiddlewares);
+                responses = await createResponseConfig(middlewares, schemaPath);
             }
             
             const tag = router;
@@ -43,7 +43,7 @@ function extractRouters(code: string): string[][] {
     return matches.map(match => [match[2], match[1]]);
 }
 
-function extractRouterSection(text: string, routerName: string, routerPath: string): [string, string, string] {
+function extractRouterSection(text: string, routerName: string, routerPath: string): [string, string, string, string] {
     const routerStartRegex = new RegExp(`const ${routerName} = new Router\\(\\)`, 'g');
     const nextRouterStartRegex = /const [^ ]+ = new Router\(\)/g;
 
@@ -62,7 +62,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
         const directoryPath = path.dirname(absolutePath);
 
-        if (!matchImport) return ['', '', ''];
+        if (!matchImport) return ['', '', '', ''];
         newAbsolutePath = path.join(directoryPath, matchImport![2]);
 
         text = Deno.readTextFileSync(newAbsolutePath);
@@ -85,7 +85,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     let middlewareStart = false;
 
     for (const line of lines) {
-        if (line.includes('/middleware/')) {
+        if (line.includes('middleware.ts')) {
             middlewareStart = true;
         }
         if (middlewareStart) {
@@ -104,8 +104,16 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         const middlewareMatch = middlewares.reverse().toString().match(regex);
         middlewarePath = path.resolve(path.dirname(newAbsolutePath!), middlewareMatch![1])
     }
+
+    let schemaPath = '';
+    const schemaRegex = /\.\/.*-schema\.ts/g;
+    const schemaMatch = text.match(schemaRegex)
     
-    return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath];
+    if (schemaMatch) {
+        schemaPath = path.resolve(path.dirname(newAbsolutePath!), schemaMatch![0])
+    }
+
+    return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath, schemaPath]
 }
 
 function extractHttpMethods(str: string): string[] {
@@ -162,7 +170,7 @@ function checkMiddlewareCorrect(middleware: string, summary: string): boolean {
     return false;
 }
 
-function extractMiddlewareSection(summary: string, middlewarePath: string): string[] {
+function extractMiddlewareSection(summary: string, middlewarePath: string): [string[], string] {
     const text = Deno.readTextFileSync(middlewarePath);
     const lines = text.split('\n');
     
@@ -173,7 +181,7 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
         if (match) {
             startIndex = lines.findIndex(line => line.includes(`export const ${match[1]} =`));
         } else {
-            return [];   
+            return [[], ''];   
         }
     }
 
@@ -200,7 +208,16 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): stri
     const extractedContent = extractBracketContent(token.substring(start));
 
     const result = splitTopLevelCommas(extractedContent);
-    return result;
+
+    let schemaPath = '';
+    const schemaRegex = /\.\/.*-schema\.ts/g;
+    const schemaMatch = text.match(schemaRegex)
+    
+    if (schemaMatch) {
+        schemaPath = path.resolve(path.dirname(middlewarePath), schemaMatch![0])
+    }
+
+    return [result, schemaPath];
 }
 
 type Method = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
@@ -436,7 +453,7 @@ function extractSummary(token: string, middlewares: string[], customMiddlewares?
 
 async function getSchemaObject(moduleName: string, schemaName: string, schemaUrl: string): Promise<z.ZodSchema> {
     try {
-        const module = await import('file://' + Deno.cwd() + schemaUrl + `/${moduleName}.ts`);
+        const module = await import('file://' + schemaUrl);
         return module[schemaName];
        
     } catch (error) {

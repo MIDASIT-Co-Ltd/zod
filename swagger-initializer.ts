@@ -11,14 +11,8 @@ export interface customMiddleware {
     body?: Array<{ [key: string]: string }>;
 }
 
-export async function initSwagger(serverUrl: string, baseUrl: string, mainRouterFilePath: string, 
-    schemaFolderPath: string, writeOpenAPISpecPath: string, customMiddlewares?: customMiddleware[]) {    
-    
-    if (schemaFolderPath.startsWith('.')) {
-        schemaFolderPath = schemaFolderPath.substring(1);
-    }
-    
-    await generateRegister(baseUrl, mainRouterFilePath, schemaFolderPath, customMiddlewares);
+export async function initSwagger(serverUrl: string, baseUrl: string, mainRouterFilePath: string, writeOpenAPISpecPath: string, customMiddlewares?: customMiddleware[]) {    
+    await generateRegister(baseUrl, mainRouterFilePath, customMiddlewares);
     writeDocumentation(writeOpenAPISpecPath, serverUrl+baseUrl);
     console.log(`OpenAPI Docs generated successfully`)
 }
