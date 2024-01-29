@@ -104,8 +104,15 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
         const middlewareMatch = middlewares.reverse().toString().match(regex);
         middlewarePath = path.resolve(path.dirname(newAbsolutePath!), middlewareMatch![1])
     }
+
+    let schemaPath = '';
+    const schemaRegex = /\.\/.*-schema\.ts/g;
+    let schemaMatch = text.match(schemaRegex)
     
-    return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath];
+    if (schemaMatch) {
+        console.log(schemaMatch)
+    }
+
 }
 
 function extractHttpMethods(str: string): string[] {
