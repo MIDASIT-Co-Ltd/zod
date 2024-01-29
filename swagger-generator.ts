@@ -110,7 +110,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     const schemaMatch = text.match(schemaRegex)
     
     if (schemaMatch) {
-        schemaPath = path.resolve(path.dirname(newAbsolutePath!), schemaMatch![1])
+        schemaPath = path.resolve(path.dirname(newAbsolutePath!), schemaMatch![0])
     }
 
     return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath, schemaPath]
@@ -214,9 +214,8 @@ function extractMiddlewareSection(summary: string, middlewarePath: string): [str
     const schemaMatch = text.match(schemaRegex)
     
     if (schemaMatch) {
-        schemaPath = path.resolve(path.dirname(middlewarePath), schemaMatch![1])
+        schemaPath = path.resolve(path.dirname(middlewarePath), schemaMatch![0])
     }
-
 
     return [result, schemaPath];
 }
