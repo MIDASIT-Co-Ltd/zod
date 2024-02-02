@@ -66,7 +66,10 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
     };
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
-    ResponseHandler(await execute(request, ctx), ctx.response)
+    const result = await execute(request, ctx);
+    const { status, ...response } = result;
+
+    ResponseHandler(response, ctx.response, status)
     await next();
 }
 
