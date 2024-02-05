@@ -100,7 +100,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     if (middlewares.length != 0) {
         const regex = /from\s+["'`](.*?)["'`]/;
         const middlewareMatch = middlewares.reverse().toString().match(regex);
-        middlewarePath = path.resolve(path.dirname(newAbsolutePath!), middlewareMatch![1])
+        middlewarePath = path.resolve(newAbsolutePath, middlewareMatch![1])
     }
 
     let schemaPath = '';
@@ -108,7 +108,7 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
     const schemaMatch = text.match(schemaRegex)
     
     if (schemaMatch) {
-        schemaPath = path.resolve(path.dirname(newAbsolutePath!), schemaMatch![0])
+        schemaPath = path.resolve(newAbsolutePath, schemaMatch![0])
     }
 
     return [text.substring(startIndex, endIndex), middlewares.reverse().toString(), middlewarePath, schemaPath]
