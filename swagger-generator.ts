@@ -67,6 +67,8 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
 
         startIndex = text.search(routerStartRegex);
         endIndex = text.length;
+
+        newAbsolutePath = path.dirname(newAbsolutePath);
     }
 
     nextRouterStartRegex.lastIndex = startIndex;
