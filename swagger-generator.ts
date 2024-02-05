@@ -49,21 +49,19 @@ function extractRouterSection(text: string, routerName: string, routerPath: stri
 
     let startIndex = text.search(routerStartRegex);
     let endIndex = text.length;
-    let newAbsolutePath;
+
+    const currentWorkingDirectory = Deno.cwd();
+    const relativePath = routerPath;
+    const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
+    
+    let newAbsolutePath = path.dirname(absolutePath);
 
     if (startIndex === -1) {
         const routerRegex = new RegExp(`import { (${routerName}) } from '(.*?)'`)
         const matchImport = text.match(routerRegex)
 
-        const currentWorkingDirectory = Deno.cwd();
-
-        const relativePath = routerPath;
-        
-        const absolutePath = path.resolve(currentWorkingDirectory, relativePath);
-        const directoryPath = path.dirname(absolutePath);
-
         if (!matchImport) return ['', '', '', ''];
-        newAbsolutePath = path.join(directoryPath, matchImport![2]);
+        newAbsolutePath = path.join(newAbsolutePath, matchImport![2]);
 
         text = Deno.readTextFileSync(newAbsolutePath);
 
