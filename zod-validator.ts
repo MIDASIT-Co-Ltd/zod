@@ -67,9 +67,10 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
     const result = await execute(request, ctx);
-    const { status, ...response } = result;
-
-    ResponseHandler(response, ctx.response, status)
+    if (result.status && typeof result.status === 'number' && result.status >= 200 && result.status <= 599) {
+        const { status, ...response } = result;
+        ResponseHandler(response, ctx.response, status)    
+    }
     await next();
 }
 
