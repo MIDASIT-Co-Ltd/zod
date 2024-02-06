@@ -52,13 +52,9 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         state?: any,
         [key: string]: any;
     }
-
-    let requestBody;
-    if (['POST', 'PUT', 'PATCH'].includes(ctx.request.method)) {
-        requestBody = await ctx.request.body().value;
-    }
+    
     const request: RequestConfig = {
-        body: requestBody || undefined,
+        body: ctx.state.body || undefined,
         param: ctx.state.param || undefined,
         header: ctx.state.header || undefined,
         path: ctx.state.path || undefined,
@@ -100,8 +96,7 @@ export const validateResponse = (resList: Array<{ status: number; schema: z.ZodS
 export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: any) => { 
     try {
         const body = await ctx.request.body().value;
-        ctx.state.request = {body : body}
-        schema.parse(body);
+        ctx.state.body = schema.parse(body);
         await next();
     } catch (error) {        
         if (error instanceof z.ZodError) {
@@ -116,7 +111,6 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
         const params = Object.fromEntries(ctx.request.url.searchParams);
-        ctx.state.request = {params : params}        
         ctx.state.param = schema.parse(params);
         await next();
     } catch (error) {        
