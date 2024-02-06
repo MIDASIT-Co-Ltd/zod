@@ -31,7 +31,8 @@ export const generateRegister = async(baseUrl: string, routerPath: string, custo
             
             const tag = router;
 
-            registerEndpoint(bearerAuth.name, method, path.replace(baseUrl, ''), description ? description : summary, tag, request, responses);
+            const nonNullPath = path.replace(baseUrl, '').length > 0 && path.replace(baseUrl, '') != ' '  ? path.replace(baseUrl, '') : '/';
+            registerEndpoint(bearerAuth.name, method, nonNullPath, description ? description : summary, tag, request, responses);
         }
     }
 }
