@@ -68,8 +68,8 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
             const { status, ...response } = result;
             ResponseHandler(response, ctx.response, status)    
         }
+        ResponseHandler(result, ctx.response)
     }
-    ResponseHandler(result, ctx.response)
     await next();
 }
 
