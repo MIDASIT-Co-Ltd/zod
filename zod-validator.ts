@@ -52,7 +52,7 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         state?: any,
         [key: string]: any;
     }
-    
+
     const request: RequestConfig = {
         body: ctx.state.body || undefined,
         param: ctx.state.param || undefined,
@@ -63,9 +63,11 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
     const result = await execute(request, ctx);
-    if (result.status && typeof result.status === 'number' && result.status >= 200 && result.status <= 599) {
-        const { status, ...response } = result;
-        ResponseHandler(response, ctx.response, status)    
+    if (result) {
+        if (result.status && typeof result.status === 'number' && result.status >= 200 && result.status <= 599) {
+            const { status, ...response } = result;
+            ResponseHandler(response, ctx.response, status)    
+        }
     }
     ResponseHandler(result, ctx.response)
     await next();
