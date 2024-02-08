@@ -6,6 +6,7 @@ import {
 import * as yaml from 'yaml/es2022/yaml.mjs';
 import { z } from 'zod';
 import { ensureDirSync } from 'std/fs/mod.ts';
+import { serverUrl } from "./swagger-initializer.ts";
 
 extendZodWithOpenApi(z);
 
@@ -21,7 +22,7 @@ class APISpecRegister{
 
 const registry = APISpecRegister.getInstance();
 
-function getOpenApiDocumentation(serverUrl: string) {
+function getOpenApiDocumentation(serverUrls: serverUrl[], baseUrl: string) {
     const generator = new OpenApiGeneratorV3(registry.definitions);
     try{
         return generator.generateDocument({    
@@ -31,15 +32,18 @@ function getOpenApiDocumentation(serverUrl: string) {
                 title: 'Midas API',
                 description: 'This is the MIDAS API specification',
             },
-            servers: [{ url: serverUrl }]
+            servers: serverUrls.map(serverUrl => ({
+                url: serverUrl.url + baseUrl,
+                description: serverUrl.description
+            }))
         });
     } catch(error){
         console.log(error);
     }
 }
 
-export function writeDocumentation(writePath: string, serverUrl: string) {
-    const docs = getOpenApiDocumentation(serverUrl);
+export function writeDocumentation(writePath: string, serverUrls: serverUrl[], baseUrl: string) {
+    const docs = getOpenApiDocumentation(serverUrls, baseUrl);
     const fileContent = yaml.stringify(docs);
 
     const textEncorder = new TextEncoder();
