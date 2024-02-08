@@ -10,10 +10,14 @@ export interface customMiddleware {
     param?: Array<{ [key: string]: string }>;
     body?: Array<{ [key: string]: string }>;
 }
+export interface serverUrl {
+    url: string;
+    description: string;
+}
 
-export async function initSwagger(serverUrl: string, baseUrl: string, mainRouterFilePath: string, writeOpenAPISpecPath: string, customMiddlewares?: customMiddleware[]) {    
+export async function initSwagger(serverUrls: serverUrl[], baseUrl: string, mainRouterFilePath: string, writeOpenAPISpecPath: string, customMiddlewares?: customMiddleware[]) {    
     await generateRegister(baseUrl, mainRouterFilePath, customMiddlewares);
-    writeDocumentation(writeOpenAPISpecPath, serverUrl+baseUrl);
+    writeDocumentation(writeOpenAPISpecPath, serverUrls, baseUrl);
     console.log(`OpenAPI Docs generated successfully`)
 }
 
