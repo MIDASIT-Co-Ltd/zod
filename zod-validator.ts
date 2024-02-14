@@ -112,7 +112,14 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
 
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
-        const params = Object.fromEntries(ctx.request.url.searchParams);
+        const params = Object.fromEntries(
+            [...ctx.request.url.searchParams.entries()].map(([key, value]) => {
+                if (typeof value === 'string' && /^[0-9]+$/.test(value)) {
+                    return [key, parseInt(value, 10)];
+                }
+                return [key, value];
+            })
+        );
         ctx.state.param = schema.parse(params);
         await next();
     } catch (error) {        
