@@ -64,12 +64,12 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
 
     const result = await execute(request, ctx);
     if (result) {
-        console.log(result.status + typeof result.status)
         if (result.status && typeof result.status === 'number' && result.status >= 200 && result.status <= 599) {
             const { status, ...response } = result;
             ResponseHandler(response, ctx.response, status)    
+        } else {
+            ResponseHandler(result, ctx.response)
         }
-        ResponseHandler(result, ctx.response)
     }
     await next();
 }
