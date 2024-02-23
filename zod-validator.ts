@@ -111,6 +111,10 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
     }
 };
 
+export const validateFormData = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
+    //todo
+}
+
 export const validateParam = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
     try {
         const params = Object.fromEntries(

@@ -62,6 +62,7 @@ export function registerEndpoint(
     tag: string,
     requestDetails: {
         body?: {
+            format: string,
             description?: string,
             schema?: any
         },
@@ -72,12 +73,12 @@ export function registerEndpoint(
     responseDetails: { [status: string]: { description: string, schema?: any } }
 ) {
     const requestConfig: any = {};
-
     if (requestDetails.body) {
+        const format = requestDetails.body.format
         requestConfig.body = {
             description: requestDetails.body.description,
             content: {
-                'application/json': {
+                [format]: {
                     schema: requestDetails.body.schema
                 }
             }
