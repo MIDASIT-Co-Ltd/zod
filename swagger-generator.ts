@@ -312,6 +312,7 @@ interface RequestConfig {
     params?: z.ZodSchema,
     headers?: z.ZodSchema,
     body?: {
+        format: string,
         schema?: z.ZodSchema;
     };
 }
@@ -359,7 +360,17 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
                 const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl);
 
                 const schema = mergeZodObject(request.body?.schema, newSchema);
-                request.body = {schema: schema};
+                request.body = {format: 'application/json', schema: schema};
+            }
+        } else if (middleware.includes('validateFormData')) {
+            const match = middleware.match(/validateFormData\(([^)]+)\)/);
+            
+            if (match && match[1]) {
+                const [moduleName, schemaName] = match[1].split('.').slice(-2);
+                const newSchema = await getSchemaObject(moduleName, schemaName, schemaUrl);
+            
+                const schema = mergeZodObject(request.body?.schema, newSchema);
+                request.body = {format: 'multipart/form-data', schema: schema};
             }
         }
 
@@ -398,7 +409,7 @@ async function createRequestConfig(middlewares: string[], schemaUrl: string, cus
                         if (customMiddleware.body) {
                             const newSchema = changeZodObject(customMiddleware.body);
                             const schema = mergeZodObject(request.body?.schema, newSchema);
-                            request.body = {schema: schema};
+                            request.body = {format: 'application/json', schema: schema};
                         }
                         if (customMiddleware.param) {
                             const newSchema = changeZodObject(customMiddleware.param);
