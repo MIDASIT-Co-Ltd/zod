@@ -1,7 +1,8 @@
-import { Context, Response, RouterContext, RouterMiddleware, RouteParams, State } from "oak/mod.ts";
+import { Context, Response, RouterContext, RouterMiddleware, RouteParams, State, NativeRequest } from "oak/mod.ts";
 import { z } from './swagger-utils.ts';
 import { ZodError, ZodRawShape } from "zod";
 import { ResponseHandler } from "./response-handler.ts";
+import { multiParser } from "multiparser/mod.ts"
 
 function handleZodError(error: ZodError, response: Response) {
     const newErrors = error.errors.map(err => ({
@@ -50,6 +51,7 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         header?: any,
         path?: any,
         state?: any,
+        form?: any,
         [key: string]: any;
     }
 
@@ -58,7 +60,8 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
         param: ctx.state.param || undefined,
         header: ctx.state.header || undefined,
         path: ctx.state.path || undefined,
-        state: ctx.state
+        state: ctx.state || undefined,
+        form: ctx.state.form || undefined
     };
     Object.keys(request).forEach(key => request[key] === undefined && delete request[key]);
 
@@ -112,7 +115,8 @@ export const validateBody = (schema: z.ZodSchema) => async (ctx: Context, next: 
 };
 
 export const validateFormData = (schema: z.ZodSchema) => async (ctx: Context, next: any) => {
-    //todo
+    const form = await multiParser((ctx.request.originalRequest as NativeRequest).request);
+    ctx.state.form = form;
     await next();
 }
 
