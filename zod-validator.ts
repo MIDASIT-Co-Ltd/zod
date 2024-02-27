@@ -78,23 +78,25 @@ export const middlewareWrapper = (execute: Function) => async(ctx: Context, next
 }
 
 export const validateResponse = (resList: Array<{ status: number; schema: z.ZodSchema }>) => async (ctx: Context, next: any) => {
-    try {
-        resList.forEach((res) =>{
-            if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
-        })
-        await next();
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            const errors = error.errors.map(err => ({
-                message: err.message,
-                path: err.path.join('.'),
-                code: err.code
-            }));        
-            ctx.response.status = 400;
-            ctx.response.body = {error: errors, response: ctx.response.body};
-        }
-        else {
-            throw error;
+    if (!(ctx.response.body instanceof ReadableStream)) {
+        try {
+            resList.forEach((res) =>{
+                if(res.status == ctx.response.status) res.schema.parse(ctx.response.body)
+            })
+            await next();
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors = error.errors.map(err => ({
+                    message: err.message,
+                    path: err.path.join('.'),
+                    code: err.code
+                }));        
+                ctx.response.status = 400;
+                ctx.response.body = {error: errors, response: ctx.response.body};
+            }
+            else {
+                throw error;
+            }
         }
     }
 };
