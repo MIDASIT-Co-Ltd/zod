@@ -21,17 +21,25 @@ export async function initSwagger(serverUrls: serverUrl[], baseUrl: string, main
     console.log(`OpenAPI Docs generated successfully`)
 }
 
-export function getSwaggerRouter(OpenAPISpecPath: string) {
+export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl[], swaggerUrl?: string) {
     const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(OpenAPISpecPath + '/openapi-docs.yml')))
     const swaggerRouter = new Router()
         .get('/', (ctx) => {ctx.response.body = getSwaggerUI(apiSpec)})
         .get('/openapi', (ctx) => {ctx.response.body = apiSpec})
 
-    console.log(
-        `SwaggerRouter successfully generated:
-        GET \'/\' => return swaggerUI
-        GET \'/openapi\' => return openAPIDocs`
-    );  
+
+    console.log(`SwaggerRouter successfully generated:`);        
+
+    if (serverUrls) {
+        serverUrls?.forEach(serverUrl => {
+            console.log(`   '${serverUrl.description}:`)
+            console.log(`       GET \'${serverUrl.url}${swaggerUrl}\' => return swaggerUI`)
+            console.log(`       GET \'${serverUrl.url}${swaggerUrl}/openapi\' => return openAPIDocs`)
+        })
+    } else {
+        console.log(`   GET \'{server_url}/${swaggerUrl}\' => return swaggerUI`);
+        console.log(`   GET \'{server_url}/${swaggerUrl}/openapi\' => return openAPIDocs`);
+    }
 
     return swaggerRouter;
 }
