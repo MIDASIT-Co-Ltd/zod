@@ -29,6 +29,7 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
 
 
     console.log(`SwaggerRouter successfully generated:`);        
+    swaggerUrl = swaggerUrl ? swaggerUrl : '';
 
     if (serverUrls) {
         serverUrls?.forEach(serverUrl => {
@@ -37,8 +38,8 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
             console.log(`       GET \'${serverUrl.url}${swaggerUrl}/openapi\' => return openAPIDocs`)
         })
     } else {
-        console.log(`   GET \'{server_url}/${swaggerUrl}\' => return swaggerUI`);
-        console.log(`   GET \'{server_url}/${swaggerUrl}/openapi\' => return openAPIDocs`);
+        console.log(`   GET \'{server_url}${swaggerUrl}\' => return swaggerUI`);
+        console.log(`   GET \'{server_url}${swaggerUrl}/openapi\' => return openAPIDocs`);
     }
 
     return swaggerRouter;
