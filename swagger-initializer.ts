@@ -21,10 +21,10 @@ export async function initSwagger(serverUrls: serverUrl[], baseUrl: string, main
     console.log(`OpenAPI Docs generated successfully`)
 }
 
-export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl[], swaggerUrl?: string, loginURL?: string) {
+export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl[], swaggerUrl?: string, loginURL?: string, validateURL?: string) {
     const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(OpenAPISpecPath + '/openapi-docs.yml')))
     const swaggerRouter = new Router()
-        .get('/', (ctx) => {ctx.response.body = getSwaggerUI(apiSpec, loginURL)})
+        .get('/', (ctx) => {ctx.response.body = getSwaggerUI(apiSpec, loginURL, validateURL)})
         .get('/openapi', (ctx) => {ctx.response.body = apiSpec})
 
     console.log(`SwaggerRouter successfully generated:`);        
@@ -44,7 +44,8 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
     return swaggerRouter;
 }
 
-function getSwaggerUI(apiSpec: string, loginURL? : string) {    
+function getSwaggerUI(apiSpec: string, loginURL? : string, validateURL?: string) {
+
     const htmlCode = `
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -176,7 +177,7 @@ function getSwaggerUI(apiSpec: string, loginURL? : string) {
                         }                        
                         try {
                             if (token) {
-                                const result = await fetch("${loginURL}", {
+                                const result = await fetch("${validateURL}", {
                                     headers: {
                                         "X-AUTH-TOKEN": token,
                                         "Content-Type": "application/json",
