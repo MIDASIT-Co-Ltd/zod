@@ -44,14 +44,16 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
     return swaggerRouter;
 }
 
-function getSwaggerUI(apiSpec: string, loginURL?: string): string {
-
+function getSwaggerUI(apiSpec: string, loginURL? : string) {    
+    const htmlCode = Deno.readTextFileSync("./login.html");
+    
     const preRequestScript = loginURL ? `
     async function loginAndStoreToken() {
         let child = document.createElement("div");
-        child.innerHTML = ${htmlCode};
+        child.innerHTML = \`${htmlCode}\`;
         document.body.appendChild(child);
     }
+        
     loginAndStoreToken().then(() => {
         window.ui = SwaggerUIBundle({
             spec: openApiSpec,
@@ -62,10 +64,7 @@ function getSwaggerUI(apiSpec: string, loginURL?: string): string {
             ],
             layout: "StandaloneLayout",
             requestInterceptor: async (request) => {
-                        let token = request.headers["X-AUTH-TOKEN"];
-                        if (token === undefined || token === null) {
-                            token = localStorage.getItem("X-AUTH-TOKEN");
-                        }
+                        let token = localStorage.getItem("X-AUTH-TOKEN");
                         
                         try {
                             if (token) {
@@ -84,7 +83,7 @@ function getSwaggerUI(apiSpec: string, loginURL?: string): string {
                             }
                         } catch {
                             document.getElementById("login-container").style.display = "block";
-                            return await new Promise((resolve) => {						
+                            return await new Promise((resolve) => {                        
                                 document.getElementById("login-cancel").addEventListener("click", () => {
                                     document.getElementById("login-container").style.display = "none";
                                     resolve(request);
@@ -113,19 +112,18 @@ function getSwaggerUI(apiSpec: string, loginURL?: string): string {
                                     }).catch(() => {
                                         localStorage.removeItem("X-AUTH-TOKEN");
                                         request.headers["X-AUTH-TOKEN"] = "INVALID TOKEN";
-                                        resolve(request)
+                                        resolve(request);
                                     }).finally(() => {
                                         document.getElementById("login-username").value = "";
                                         document.getElementById("login-password").value = "";
-                                        document.getElementById("login-container").style.display = "none"
+                                        document.getElementById("login-container").style.display = "none";
                                     });
                                 });
-                            })
+                            });
                         }
                     }
         });
-    });` : ``
-
+    });` : ``;
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -142,7 +140,7 @@ function getSwaggerUI(apiSpec: string, loginURL?: string): string {
         <script src="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-bundle.js" crossorigin></script>
         <script src="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-standalone-preset.js" crossorigin></script>
         <script>
-            const openApiSpec = ${apiSpec}
+            const openApiSpec = ${apiSpec};
 
             const HideTopBarPlugin = function() {
                 return {
@@ -161,119 +159,9 @@ function getSwaggerUI(apiSpec: string, loginURL?: string): string {
                     ],
                     layout: "StandaloneLayout"
                 });
-            ${preRequestScript}
+                ${preRequestScript}
             };
         </script>
     </body>
-    </html>
-    `
+    </html>`;
 }
-
-const htmlCode = `
-		<link rel="preconnect" href="https://fonts.gstatic.com">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
-    <style media="screen">
-      *,
-		*:before,
-		*:after{
-				padding: 0;
-				margin: 0;
-				box-sizing: border-box;
-		}
-		#login-container{
-			display: none;
-		}
-		.login-background{
-				width: 320px;
-				height: 320px;
-				position: fixed;
-				transform: translate(-50%,-50%);
-				left: 50%;
-				top: 50%;
-		}
-		.login-form {
-				width: 320px;
-				height: 320px;
-				background-color: rgba(255,255,255,0.13);
-				position: fixed;
-				transform: translate(-50%,-50%);
-				top: 50%;
-				left: 50%;
-				border-radius: 10px;
-				backdrop-filter: blur(10px);
-				border: 2px solid rgba(255,255,255,0.1);
-				box-shadow: 0 0 40px rgba(8,7,16,0.6);
-				padding: 50px 35px;
-				font-family: 'Poppins',sans-serif;
-				color: #000;
-				letter-spacing: 0.5px;
-				outline: none;
-				border: none;
-		}
-		.login-header{
-				font-size: 24px;
-				font-weight: 500;
-				line-height: 32px;
-				text-align: center;
-				cursor: default;
-		}
-		.login-label{
-				display: block;
-				margin-top: 15px;
-				font-size: 12px;
-				font-weight: 500;
-		}
-		.login-input{
-				display: block;
-				height: 35px;
-				width: 100%;
-				background-color: rgba(255,255,255,0.07);
-				border-radius: 7px;
-				padding: 0 10px;
-				margin-top: 8px;
-				font-size: 10px;
-				font-weight: 300;
-		}
-		.login-input::placeholder{
-				color: #718096;
-		}
-		.login-button-container{
-			margin-top: 15px;
-			width: 100%;
-			display: flex;
-			justify-content: space-between;
-		}
-		.login-button{
-				background-color: transparent;
-				border: 1px solid transparent;
-				width: 100px;
-				height: 50px;
-				color: #080710;
-				font-size: 12px;
-				font-weight: 600;
-				border-radius: 7px;
-				cursor: pointer;
-		}
-		.login-button:hover{
-				background-color: #fff;
-				color: #718096;
-		}
-    </style>
-		<div id="login-container">
-			<div class="login-background">
-			</div>
-			<div class="login-form">
-					<h3 class="login-header">Login required!</h3>
-					<label class="login-label" for="username">Username</label>
-					<input class="login-input" type="text" placeholder="Email or Phone" id="login-username">
-					<label class="login-label" for="password">Password</label>
-					<input class="login-input" type="password" placeholder="Password" id="login-password">
-					
-					<div class="login-button-container">
-						<button class="login-button" id="login-cancel">Cancel</button>
-						<button class="login-button" id="login-ok">Log In</button>
-					</div>
-			</div>
-		</div>
-`;
