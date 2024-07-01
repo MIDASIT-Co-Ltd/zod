@@ -21,10 +21,10 @@ export async function initSwagger(serverUrls: serverUrl[], baseUrl: string, main
     console.log(`OpenAPI Docs generated successfully`)
 }
 
-export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl[], swaggerUrl?: string) {
+export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl[], swaggerUrl?: string, script?: string) {
     const apiSpec = JSON.stringify(parse(Deno.readTextFileSync(OpenAPISpecPath + '/openapi-docs.yml')))
     const swaggerRouter = new Router()
-        .get('/', (ctx) => {ctx.response.body = getSwaggerUI(apiSpec)})
+        .get('/', (ctx) => {ctx.response.body = getSwaggerUI(apiSpec, script)})
         .get('/openapi', (ctx) => {ctx.response.body = apiSpec})
 
 
@@ -45,7 +45,7 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
     return swaggerRouter;
 }
 
-function getSwaggerUI(apiSpec: string): string {
+function getSwaggerUI(apiSpec: string, script?: string): string {
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -66,10 +66,10 @@ function getSwaggerUI(apiSpec: string): string {
             const HideTopBarPlugin = function() {
                 return {
                     components: {
-                    Topbar: () => null
+                        Topbar: () => null
                     }
                 };
-                };
+            };
             window.onload = () => {
                 window.ui = SwaggerUIBundle({
                     spec: openApiSpec,
@@ -80,6 +80,7 @@ function getSwaggerUI(apiSpec: string): string {
                     ],
                     layout: "StandaloneLayout"
                 });
+                ${script}
             };
         </script>
     </body>
