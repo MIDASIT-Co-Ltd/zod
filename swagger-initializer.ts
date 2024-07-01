@@ -26,8 +26,7 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
     const swaggerRouter = new Router()
         .get('/', (ctx) => {ctx.response.body = getSwaggerUI(apiSpec, script)})
         .get('/openapi', (ctx) => {ctx.response.body = apiSpec})
-
-
+        
     console.log(`SwaggerRouter successfully generated:`);        
     swaggerUrl = swaggerUrl ? swaggerUrl : '/{swagger_router_path}';
 
