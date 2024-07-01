@@ -45,6 +45,88 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
 }
 
 function getSwaggerUI(apiSpec: string, loginURL?: string): string {
+
+    const preRequestScript = loginURL ? `
+    async function loginAndStoreToken() {
+        let child = document.createElement("div");
+        child.innerHTML = ${htmlCode};
+        document.body.appendChild(child);
+    }
+    loginAndStoreToken().then(() => {
+        window.ui = SwaggerUIBundle({
+            spec: openApiSpec,
+            dom_id: "#swagger-ui",
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+            plugins: [
+                HideTopBarPlugin
+            ],
+            layout: "StandaloneLayout",
+            requestInterceptor: async (request) => {
+                        let token = request.headers["X-AUTH-TOKEN"];
+                        if (token === undefined || token === null) {
+                            token = localStorage.getItem("X-AUTH-TOKEN");
+                        }
+                        
+                        try {
+                            if (token) {
+                                const result = await fetch("${loginURL}", {
+                                    headers: {
+                                        "X-AUTH-TOKEN": token,
+                                        "Content-Type": "application/json",
+                                    },
+                                    credentials: "include",
+                                });
+                                if (!result.ok) throw new Error("Token invalid");
+                                request.headers["X-AUTH-TOKEN"] = token;
+                                return request;
+                            } else {
+                                throw new Error("Token not found");
+                            }
+                        } catch {
+                            document.getElementById("login-container").style.display = "block";
+                            return await new Promise((resolve) => {						
+                                document.getElementById("login-cancel").addEventListener("click", () => {
+                                    document.getElementById("login-container").style.display = "none";
+                                    resolve(request);
+                                });
+        
+                                document.getElementById("login-ok").addEventListener("click", () => {
+                                    const email = document.getElementById("login-username").value;
+                                    const password = document.getElementById("login-password").value;
+        
+                                    fetch("${loginURL}", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json"
+                                        },
+                                        body: JSON.stringify({
+                                            email,
+                                            password
+                                        })
+                                    }).then(async (response) => {
+                                        const result = await response.json();
+                                        const token = result.token;
+                                        localStorage.setItem("X-AUTH-TOKEN", "Bearer " + token);
+        
+                                        request.headers["X-AUTH-TOKEN"] = "Bearer " + token;
+                                        resolve(request);
+                                    }).catch(() => {
+                                        localStorage.removeItem("X-AUTH-TOKEN");
+                                        request.headers["X-AUTH-TOKEN"] = "INVALID TOKEN";
+                                        resolve(request)
+                                    }).finally(() => {
+                                        document.getElementById("login-username").value = "";
+                                        document.getElementById("login-password").value = "";
+                                        document.getElementById("login-container").style.display = "none"
+                                    });
+                                });
+                            })
+                        }
+                    }
+        });
+    });` : ``
+
+
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -79,86 +161,7 @@ function getSwaggerUI(apiSpec: string, loginURL?: string): string {
                     ],
                     layout: "StandaloneLayout"
                 });
-` + loginURL ? `
-                async function loginAndStoreToken() {
-                    let child = document.createElement("div");
-                    child.innerHTML = ${htmlCode};
-                    document.body.appendChild(child);
-                }
-                loginAndStoreToken().then(() => {
-                    window.ui = SwaggerUIBundle({
-                        spec: openApiSpec,
-                        dom_id: "#swagger-ui",
-                        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-                        plugins: [
-                            HideTopBarPlugin
-                        ],
-                        layout: "StandaloneLayout",
-                        requestInterceptor: async (request) => {
-                                    let token = request.headers["X-AUTH-TOKEN"];
-                                    if (token === undefined || token === null) {
-                                        token = localStorage.getItem("X-AUTH-TOKEN");
-                                    }
-                                    
-                                    try {
-                                        if (token) {
-                                            const result = await fetch("${loginURL}", {
-                                                headers: {
-                                                    "X-AUTH-TOKEN": token,
-                                                    "Content-Type": "application/json",
-                                                },
-                                                credentials: "include",
-                                            });
-                                            if (!result.ok) throw new Error("Token invalid");
-                                            request.headers["X-AUTH-TOKEN"] = token;
-                                            return request;
-                                        } else {
-                                            throw new Error("Token not found");
-                                        }
-                                    } catch {
-                                        document.getElementById("login-container").style.display = "block";
-                                        return await new Promise((resolve) => {						
-                                            document.getElementById("login-cancel").addEventListener("click", () => {
-                                                document.getElementById("login-container").style.display = "none";
-                                                resolve(request);
-                                            });
-                    
-                                            document.getElementById("login-ok").addEventListener("click", () => {
-                                                const email = document.getElementById("login-username").value;
-                                                const password = document.getElementById("login-password").value;
-                    
-                                                fetch("https://api-agw-backend.midasuser.com/auth/v1/login", {
-                                                    method: "POST",
-                                                    headers: {
-                                                        "Content-Type": "application/json"
-                                                    },
-                                                    body: JSON.stringify({
-                                                        email,
-                                                        password
-                                                    })
-                                                }).then(async (response) => {
-                                                    const result = await response.json();
-                                                    const token = result.token;
-                                                    localStorage.setItem("X-AUTH-TOKEN", "Bearer " + token);
-                    
-                                                    request.headers["X-AUTH-TOKEN"] = "Bearer " + token;
-                                                    resolve(request);
-                                                }).catch(() => {
-                                                    localStorage.removeItem("X-AUTH-TOKEN");
-                                                    request.headers["X-AUTH-TOKEN"] = "INVALID TOKEN";
-                                                    resolve(request)
-                                                }).finally(() => {
-                                                    document.getElementById("login-username").value = "";
-                                                    document.getElementById("login-password").value = "";
-                                                    document.getElementById("login-container").style.display = "none"
-                                                });
-                                            });
-                                        })
-                                    }
-                                }
-                    });
-` : `` + `
-                });
+            ${preRequestScript}
             };
         </script>
     </body>
