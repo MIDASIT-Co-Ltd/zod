@@ -170,8 +170,10 @@ function getSwaggerUI(apiSpec: string, loginURL? : string) {
             ],
             layout: "StandaloneLayout",
             requestInterceptor: async (request) => {
-                        let token = localStorage.getItem("X-AUTH-TOKEN");
-                        
+                        let token = request.headers["X-AUTH-TOKEN"];
+                        if (token === undefined || token === null) {
+                            token = localStorage.getItem("X-AUTH-TOKEN");
+                        }                        
                         try {
                             if (token) {
                                 const result = await fetch("${loginURL}", {
