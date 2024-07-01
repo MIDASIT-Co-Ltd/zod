@@ -1,7 +1,8 @@
 import { generateRegister } from "./swagger-generator.ts";
 import { writeDocumentation } from "./swagger-utils.ts";
-import { Router } from 'oak/mod.ts'
+import { Router } from "oak/mod.ts";
 import { parse } from "yaml/es2022/yaml.mjs";
+import { dirname, fromFileUrl, join } from "std/path/mod.ts";
 
 export interface customMiddleware {
     name: string;
@@ -45,8 +46,11 @@ export function getSwaggerRouter(OpenAPISpecPath: string, serverUrls?: serverUrl
 }
 
 function getSwaggerUI(apiSpec: string, loginURL? : string) {    
-    const htmlCode = Deno.readTextFileSync("./login.html");
-    
+    const __dirname = dirname(fromFileUrl(import.meta.url));
+    const filePath = join(__dirname, "login.html");
+
+    const htmlCode = Deno.readTextFileSync(filePath);
+
     const preRequestScript = loginURL ? `
     async function loginAndStoreToken() {
         let child = document.createElement("div");
